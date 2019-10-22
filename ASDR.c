@@ -224,7 +224,7 @@ int main(){
 //  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
 //    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; } $";
     
-    char *palavra = "void ";
+    char *palavra = "falsetrue";
     
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
@@ -239,10 +239,16 @@ int main(){
     token = scanner(palavra, &pos);
     
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
-    if (Programa(palavra, &pos))
-        printf("\nSUCESSO NA LEITURA\n");
-    else
+    if (token != 0) {
+        if (Bool(palavra, &pos))    //Programa(palavra, &pos))
+            printf("\nSUCESSO NA LEITURA\n");
+        else
+            erro(&pos);
+    } else {
+        erroLexico = 1;
         erro(&pos);
+    }
+        
         
     
     return 0;
@@ -518,7 +524,13 @@ int Fator(char palavra[], int *pos);
 /*
  21. Variavel -> Identificador
 */
-int Variavel(char palavra[], int *pos);
+int Variavel(char palavra[], int *pos) {
+    if (lookahead == '_') {
+        if (Identificador(palavra,pos))
+            return 1;
+    }
+    return 0;
+}
 
 
 /*
@@ -534,6 +546,7 @@ int Bool(char palavra[], int *pos) {
         if (match('f', palavra, pos))
             return 1;
     }
+    return 0;
 }
 
 
