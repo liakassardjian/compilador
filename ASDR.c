@@ -472,8 +472,44 @@ int ComandoRepetitivo(char palavra[], int *pos);
  16. Expressao -> ExpressaoSimples ExpressaoOpcional
      ExpresaoOpcional -> Relacao ExpressaoSimples
 */
-int Expressao(char palavra[], int *pos);
-int ExpresaoOpcional(char palavra[], int *pos);
+int Expressao(char palavra[], int *pos) {
+    if (lookahead == '+' ||
+        lookahead == '-' ||
+        lookahead == '_' ||
+        lookahead == '0' ||
+        lookahead == '1' ||
+        lookahead == '2' ||
+        lookahead == '3' ||
+        lookahead == '4' ||
+        lookahead == '5' ||
+        lookahead == '6' ||
+        lookahead == '7' ||
+        lookahead == '8' ||
+        lookahead == '9' ||
+        lookahead == 't' ||
+        lookahead == 'f' ||
+        lookahead == '(') {
+        if (ExpressaoSimples(palavra, pos) &&
+            ExpresaoOpcional(palavra, pos))
+            return 1;
+    }
+    return 0;
+}
+
+int ExpresaoOpcional(char palavra[], int *pos) {
+    if ((lookahead == '=' && token == _IGUAL_IGUAL_) ||
+        lookahead == '<'                             ||
+        lookahead == '>') {
+        if (Relacao(palavra, pos) &&
+            ExpressaoSimples(palavra, pos))
+            return 1;
+        
+    } else if (lookahead == ')' ||
+               lookahead == ';') {
+        return 1;
+    }
+    return 0;
+}
 
 
 /*
