@@ -509,7 +509,13 @@ int Relacao(char palavra[], int *pos) {
      ExpressaoSimplesRep -> &
 */
 int ExpressaoSimples(char palavra[], int *pos);
-int SinalOpcional(char palavra[], int *pos);
+int SinalOpcional(char palavra[], int *pos){
+    if(lookahead == '+' && match('+', palavra, pos))
+        return 1;
+    else if(lookahead == '-' && match('-', palavra, pos))
+        return 1;
+    return 0;
+}
 int ExpressaoSimplesRep(char palavra[], int *pos);
 
 
@@ -559,7 +565,7 @@ int Operacao(char palavra[], int *pos) {
     if (lookahead == '*') {
         if (match('*', palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '/') {
         if (match('/', palavra, pos))
             return 1;
