@@ -224,7 +224,7 @@ int main(){
 //  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
 //    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; } $";
 
-    char *palavra = "falsetrue";
+    char *palavra = "1234567890 / _asd * 456";
 
 
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
@@ -240,11 +240,15 @@ int main(){
     token = scanner(palavra, &pos);
 
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
-
-    if (Numero(palavra, &pos))
-        printf("\nSUCESSO NA LEITURA\n");
-    else
+    if (token != 0) {
+        if (Termo(palavra, &pos))
+            printf("\nSUCESSO NA LEITURA\n");
+        else
+            erro(&pos);
+    } else {
+        erroLexico = 1;
         erro(&pos);
+    }
 
 
     return 0;
@@ -498,14 +502,57 @@ int ExpressaoSimplesRep(char palavra[], int *pos);
 
 /*
  19. Termo -> Fator FatorRep
-     FatorRep -> Operacao Fator
+     FatorRep -> Operacao Fator FatorRep
      FatorRep -> &
      Operacao -> *
      Operacao -> /
 */
-int Termo(char palavra[], int *pos);
-int FatorRep(char palavra[], int *pos);
-int Operacao(char palavra[], int *pos);
+int Termo(char palavra[], int *pos) {
+    if (lookahead == '_' ||
+        lookahead == '0' ||
+        lookahead == '1' ||
+        lookahead == '2' ||
+        lookahead == '3' ||
+        lookahead == '4' ||
+        lookahead == '5' ||
+        lookahead == '6' ||
+        lookahead == '7' ||
+        lookahead == '8' ||
+        lookahead == '9' ||
+        lookahead == 't' ||
+        lookahead == 'f' ||
+        lookahead == '(') {
+        if (Fator(palavra, pos) &&
+            FatorRep(palavra, pos))
+            return 1;
+    }
+    return 0;
+}
+
+int FatorRep(char palavra[], int *pos) {
+    if (lookahead == '*' || lookahead == '/') {
+        if (Operacao(palavra, pos) &&
+            Fator(palavra, pos)) {
+            if (lookahead == '*' || lookahead == '/') {
+                return FatorRep(palavra, pos);;
+            }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int Operacao(char palavra[], int *pos) {
+    if (lookahead == '*') {
+        if (match('*', palavra, pos))
+            return 1;
+        
+    } else if (lookahead == '/') {
+        if (match('/', palavra, pos))
+            return 1;
+    }
+    return 0;
+}
 
 
 /*
@@ -518,15 +565,14 @@ int Fator(char palavra[], int *pos){
     if(lookahead == '_' && Variavel(palavra, pos))
         return 1;
     else if((lookahead == '0' || lookahead == '1' || lookahead == '2' || lookahead == '3' || lookahead == '4' || lookahead == '5' || lookahead == '6'
-            || lookahead == '7' || lookahead == '8' || lookahead == '9') && Numero(palavra, pos))
+             || lookahead == '7' || lookahead == '8' || lookahead == '9') && Numero(palavra, pos))
         return 1;
     else if((lookahead == 't' || lookahead == 'f') && Bool(palavra, pos))
         return 1;
-    else if(lookahead == '(' && match('(', palavra, pos) && ExpressaoSimples(palavra, pos)){
-        if(lookahead == ')' && match(')', palavra, pos))
-            return 1;
-    }
-
+//    else if(lookahead == '(' && match('(', palavra, pos) && ExpressaoSimples(palavra, pos)){
+//        if(lookahead == ')' && match(')', palavra, pos))
+//            return 1;
+//    }
     return 0;
 }
 
