@@ -224,7 +224,7 @@ int main(){
 //  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
 //    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; } $";
 
-    char *palavra = "falsetrue";
+    char *palavra = "98098094580934850928 ";
 
 
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
@@ -492,7 +492,13 @@ int Relacao(char palavra[], int *pos);
      ExpressaoSimplesRep -> &
 */
 int ExpressaoSimples(char palavra[], int *pos);
-int SinalOpcional(char palavra[], int *pos);
+int SinalOpcional(char palavra[], int *pos){
+    if(lookahead == '+' && match('+', palavra, pos))
+        return 1;
+    else if(lookahead == '-' && match('-', palavra, pos))
+        return 1;
+    return 0;
+}
 int ExpressaoSimplesRep(char palavra[], int *pos);
 
 
