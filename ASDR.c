@@ -530,7 +530,10 @@ int Bool(char palavra[], int *pos) {
         if (match('t', palavra, pos))
             return 1;
         
-    } else 
+    } else if (lookahead == 'f') {
+        if (match('f', palavra, pos))
+            return 1;
+    }
 }
 
 
