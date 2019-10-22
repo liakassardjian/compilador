@@ -1,99 +1,99 @@
 
 /*
  Implementacao do Analisador Sintatico Descendente Recursivo para a gramatica:
- 
+
  1. Programa -> DecFuncoesRep program Identificador Bloco
     DecFuncoesRep -> DeclaracoesFuncoes DecFuncoesRep
     DecFuncoesRep -> &
- 
+
  2. Bloco -> { DecVariaveisOpcional ComandoComposto }
     DecVariaveisOpcional -> ParteDeclaracoesDeVariaveis
     DecVariaveisOpcional -> &
- 
+
  3. ParteDeclaracoesDeVariaveis -> DecVariaveis ParteDeclaracoesDeVariaveis
     ParteDeclaracoesDeVariaveis -> &
 
  4. DecVariaveis -> int ListaDeIdentificadores ;
     DecVariaveis -> bool ListaDeIdentificadores ;
- 
+
  5. ListaDeIdentificadores -> Identificador ListaIdOpcional
     ListaIdOpcional -> , Identificador
     ListaIdOpcional -> &
- 
+
  6. DeclaracoesFuncoes -> DeclaraFuncao DeclaracoesFuncoes
     DeclaracoesFuncoes -> &
- 
+
  7. DeclaraFuncao -> void Identificador ( ParametroFormalOpcional ) Bloco
     ParametroFormalOpcional -> ParametroFormal
     ParametroFormalOpcional -> &
- 
+
  8. ParametroFormal -> int Identificador
     ParametroFormal -> bool Identificador
- 
+
  9. ComandoComposto -> Comando ; ComandoCompostoOpcional
     ComandoCompostoOpcional -> Comando ;
     ComandoCompostoOpcional -> &
- 
+
  10. Comando -> Atribuicao
      Comando -> ChamadaDeProcedimento
      Comando -> ComandoCondicional
      Comando -> ComandoRepetitivo
      Comando -> print Identificador
- 
+
  11. Atribuicao -> Variavel = Expressao
- 
+
  12. ChamadaDeProcedimento -> Identificador ( ParametroOpcional )
      ParametroOpcional -> Parametro
      ParametroOpcional -> &
- 
+
  13. Parametro -> Identificador
      Parametro -> Numero
      Parametro -> Bool
      Parametro -> &
- 
+
  14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional
      ElseOpcional -> else { ComandoComposto }
      ElseOpcional -> &
- 
+
  15. ComandoRepetitivo -> do { ComandoComposto } while ( Expressao )
- 
+
  16. Expressao -> ExpressaoSimples ExpressaoOpcional
      ExpresaoOpcional -> Relacao ExpressaoSimples
- 
+
  17. Relacao -> ==
      Relacao -> <>
      Relacao -> <
      Relacao -> <=
      Relacao -> >=
      Relacao -> >
- 
+
  18. ExpressaoSimples -> SinalOpcional Termo ExpressaoSimplesRep
      SinalOpcional -> +
      SinalOpcional -> -
      SinalOpcional -> &
      ExpressaoSimplesRep -> ExpressaoSimples ExpressaoSimplesRep
      ExpressaoSimplesRep -> &
- 
+
  19. Termo -> Fator FatorRep
      FatorRep -> Operacao Fator
      FatorRep -> &
      Operacao -> *
      Operacao -> /
- 
+
  20. Fator -> Variavel
      Fator -> Numero
      Fator -> Bool
      Fator -> ( ExpressaoSimples )
- 
+
  21. Variavel -> Identificador
- 
+
  22. Bool -> true
      Bool -> false
- 
+
  23. Numero -> num
- 
+
  24. Identificador -> id
- 
+
 */
 
 #include <stdio.h>
@@ -223,28 +223,28 @@ char * traduzToken(int t);
 int main(){
 //  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
 //    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; } $";
-    
-    char *palavra = "void ";
-    
+
+    char *palavra = "999 ";
+
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
-    
+
     // Inicializacao do scanner
     initScanner();
-    
+
     // Inicializa lookahead com o primeiro caracter
     lookahead = palavra[pos];
-    
+
     // Inicializa token com a primeira chamada do scanner
     token = scanner(palavra, &pos);
-    
+
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
-    if (Programa(palavra, &pos))
+    if (Numero(palavra, &pos))
         printf("\nSUCESSO NA LEITURA\n");
     else
         erro(&pos);
-        
-    
+
+
     return 0;
 }
 
@@ -260,14 +260,14 @@ int main(){
 int match(char c, char palavra[], int *pos) {
     // Verifica se o lookahed eh igual ao caracter recebido
     if (lookahead == c) {
-        
+
         // Atualiza o lookahed com o proximo caracter
         lookahead = palavra[*pos];
-        
+
         // Atualiza o token com o resultado da chamada de scanner,
         // que ja atualiza pos para o primeiro caracter da proxima palavra
         token = scanner(palavra, pos);
-        
+
         // Verifica que o token retornou erro lexico.
         if (!token) {
             // A variavel global de erro lexico eh atualizada para possibilitar
@@ -290,7 +290,7 @@ void erro(int *pos) {
         printf("\nERRO LEXICO\n");
     else
         printf("\nERRO DE SINTAXE\n");
-    
+
     printf("POSICAO #%d: %c\n", *pos, lookahead);
 }
 
@@ -311,7 +311,7 @@ int Programa(char palavra[], int *pos) {
             Identificador(palavra, pos) &&
             Bloco(palavra, pos))
             return 1;
-        
+
     // A segunda possibilidade de "first" para Programa eh p,
     // entao verifica-se o lookahead para essa letra
     } else if (lookahead == 'p') {
@@ -319,7 +319,7 @@ int Programa(char palavra[], int *pos) {
             Identificador(palavra, pos) &&
             Bloco(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -512,7 +512,21 @@ int Operacao(char palavra[], int *pos);
      Fator -> Bool
      Fator -> ( ExpressaoSimples )
 */
-int Fator(char palavra[], int *pos);
+int Fator(char palavra[], int *pos){
+    if(lookahead == '_' && Variavel(palavra, pos))
+        return 1;
+    else if((lookahead == '0' || lookahead == '1' || lookahead == '2' || lookahead == '3' || lookahead == '4' || lookahead == '5' || lookahead == '6'
+            || lookahead == '7' || lookahead == '8' || lookahead == '9') && Numero(palavra, pos))
+        return 1;
+    else if((lookahead == 't' || lookahead == 'f') && Bool(palavra, pos))
+        return 1;
+    else if(lookahead == '(' && match('(', palavra, pos) && ExpressaoSimples(palavra, pos)){
+        if(lookahead == ')' && match(')', palavra, pos))
+            return 1;
+    }
+
+    return 0;
+}
 
 
 /*
@@ -525,19 +539,71 @@ int Variavel(char palavra[], int *pos);
  22. Bool -> true
      Bool -> false
 */
-int Bool(char palavra[], int *pos) {
-    if (lookahead == 't') {
-        if (match('t', palavra, pos))
-            return 1;
-        
-    } else 
-}
+//int Bool(char palavra[], int *pos) {
+//    if (lookahead == 't') {
+//        if (match('t', palavra, pos))
+//            return 1;
+//
+//    } else
+//}
 
 
 /*
  23. Numero -> num
 */
-int Numero(char palavra[], int *pos);
+int Numero(char palavra[], int *pos){
+    if(lookahead == '0'){
+        if(match('0', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '1'){
+        if(match('1', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '2'){
+        if(match('2', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '3'){
+        if(match('3', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '4'){
+        if(match('4', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '5'){
+        if(match('5', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '6'){
+        if(match('6', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '7'){
+        if(match('7', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '8'){
+        if(match('8', palavra, pos))
+            return 1;
+    }
+
+    else if(lookahead == '9'){
+        if(match('9', palavra, pos))
+            return 1;
+    }
+
+    return 0;
+}
 
 
 /*
@@ -1105,10 +1171,10 @@ int scanner(char *p, int *pos) {
 
     q24:
         return _ABRE_PARENTESES_;
-    
+
     q25:
         return _FECHA_PARENTESES_;
-    
+
     q26:
         return _VIRGULA_;
 
@@ -1152,7 +1218,7 @@ int scanner(char *p, int *pos) {
         switch(*palavra){
             case '\0':
                 return _ERRO_LEXICO_;
-                
+
             // Verifica se é fim de comentário
             case '*':
                 palavra++; (*pos)++;
@@ -1169,17 +1235,17 @@ int scanner(char *p, int *pos) {
         switch(*palavra){
             case '\0':
                 return _ERRO_LEXICO_;
-            
+
             case '/':
                 palavra++; (*pos)++;
                 goto q36;
-            
+
             case '*':
                 palavra--;
                 insereElemento(*palavra);
                 palavra++; palavra++; (*pos)++;
                 goto q35;
-            
+
             default:
                 palavra--;
                 insereElemento(*palavra);
@@ -1222,11 +1288,11 @@ int scanner(char *p, int *pos) {
             insereElemento(*palavra);
             palavra++; (*pos)++;
             goto q97;
-            
+
         } else {
             return _ERRO_LEXICO_;
         }
-    
+
     q41:
         switch(*palavra){
             case '1':
@@ -1500,7 +1566,7 @@ int scanner(char *p, int *pos) {
 
     q68:
         return _PRINT_;
-    
+
     q69:
         switch(*palavra){
             case ' ':
@@ -1605,7 +1671,7 @@ int scanner(char *p, int *pos) {
 
     q81:
         return _FALSE_;
-    
+
     q82:
         switch(*palavra){
             case 'o':
@@ -1628,7 +1694,7 @@ int scanner(char *p, int *pos) {
 
     q84:
         return _DO_;
-    
+
     q85:
         switch(*palavra){
             case 'l':
@@ -1669,7 +1735,7 @@ int scanner(char *p, int *pos) {
 
     q89:
         return _ELSE_;
-    
+
     q90:
         switch(*palavra){
             case 'h':
@@ -1722,20 +1788,20 @@ int scanner(char *p, int *pos) {
 
     q96:
         return _NUM_;
-    
+
     q97:
         if (((*palavra >= 65) && (*palavra <= 90)) || ((*palavra >= 97) && (*palavra <= 122))) {
             insereElemento(*palavra);
             palavra++; (*pos)++;
             goto q97;
-            
+
         } else if (*palavra == ' ') {
             palavra++; (*pos)++;
             goto q42;
-            
+
         } else if (*palavra == '\0') {
             goto q42;
-            
+
         } else {
             return _ERRO_LEXICO_;
         }
