@@ -336,10 +336,17 @@ int Programa(char palavra[], int *pos) {
 
 int DecFuncoesRep(char palavra[], int *pos) {
     printf("DecFuncoesRep\n");
-//    if (DeclaracoesFuncoes(palavra, pos) &&
-//        DecFuncoesRep(palavra, pos))
-//        return 1;
-    return 1;
+    if (lookahead == 'v') {
+        if (DeclaracoesFuncoes(palavra, pos)) {
+            if (lookahead == 'v')
+                return DecFuncoesRep(palavra, pos);
+            return 1;
+        }
+    } else if (lookahead == 'p') {
+        return 1;
+        
+    }
+    return 0;
 }
 
 
@@ -361,7 +368,14 @@ int Bloco(char palavra[], int *pos) {
 }
 
 int DecVariaveisOpcional(char palavra[], int *pos) {
-    return 1;
+    printf("DecVariaveisOpcional\n");
+    if (lookahead == 'i'||
+        lookahead == 'b') {
+        if (ParteDeclaracoesDeVariaveis(palavra, pos))
+            return 1;
+        
+    } // else if (lookahead)
+    return 0;
 }
 
 
@@ -369,14 +383,39 @@ int DecVariaveisOpcional(char palavra[], int *pos) {
  3. ParteDeclaracoesDeVariaveis -> DecVariaveis ParteDeclaracoesDeVariaveis
     ParteDeclaracoesDeVariaveis -> &
 */
-int ParteDeclaracoesDeVariaveis(char palavra[], int *pos);
+int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
+    printf("ParteDeclaracoesDeVariaveis\n");
+    if (lookahead == 'i'||
+        lookahead == 'b') {
+        if (DecVariaveis(palavra, pos)) {
+            if (ParteDeclaracoesDeVariaveis(palavra, pos))
+                return 1;
+            return 1;
+        }
+    } // else if (lookahead)
+    return 0;
+}
 
 
 /*
  4. DecVariaveis -> int ListaDeIdentificadores ;
     DecVariaveis -> bool ListaDeIdentificadores ;
 */
-int DecVariaveis(char palavra[], int *pos);
+int DecVariaveis(char palavra[], int *pos) {
+    printf("DecVariaveis\n");
+    if (lookahead == 'i' && token == _INT_) {
+        if (match('i', palavra, pos)           &&
+            ListaDeIdentificadores(palavra, pos))
+            return 1;
+        
+    } else if (lookahead == 'b') {
+        if (match('b', palavra, pos)           &&
+            ListaDeIdentificadores(palavra, pos))
+            return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
@@ -384,8 +423,26 @@ int DecVariaveis(char palavra[], int *pos);
     ListaIdOpcional -> , Identificador
     ListaIdOpcional -> &
 */
-int ListaDeIdentificadores(char palavra[], int *pos);
-int ListaIdOpcional(char palavra[], int *pos);
+int ListaDeIdentificadores(char palavra[], int *pos) {
+    printf("ListaDeIdentificadores\n");
+    if (lookahed == '_') {
+        if (Identificador(palavra, pos)     &&
+            ListaIdOpcional(palavra, pos))
+            return 1;
+    }
+    return 0;
+}
+
+int ListaIdOpcional(char palavra[], int *pos) {
+    printf("ListaIdOpcional\n");
+    if (lookahed == ',') {
+        if (match(',', palavra, pos)    &&
+            Identificador(palavra, pos))
+            return 1;
+        
+    } // else if (lookahead)
+    return 0;
+}
 
 
 /*
@@ -393,6 +450,7 @@ int ListaIdOpcional(char palavra[], int *pos);
     DeclaracoesFuncoes -> &
 */
 int DeclaracoesFuncoes(char palavra[], int *pos) {
+    printf("DeclaracoesFuncoes\n");
     if (lookahed == 'v') {
         if (DeclaraFuncao(palavra, pos)) {
             if (lookahed == 'v')
@@ -413,6 +471,7 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
     ParametroFormalOpcional -> &
 */
 int DeclaraFuncao(char palavra[], int *pos) {
+    printf("DeclaraFuncao\n");
     if (lookahead == 'v') {
         if (match('v', palavra, pos)    &&
             Identificador(palavra, pos) &&
@@ -426,6 +485,7 @@ int DeclaraFuncao(char palavra[], int *pos) {
 }
 
 int ParametroFormalOpcional(char palavra[], int *pos) {
+    printf("ParametroFormalOpcional\n");
     if (lookahead == 'i'||
         lookahead == 'b') {
         if (ParametroFormal(palavra, pos))
@@ -445,7 +505,7 @@ int ParametroFormalOpcional(char palavra[], int *pos) {
 */
 int ParametroFormal(char palavra[], int *pos) {
     printf("ParametroFormal\n");
-    if (lookahead == 'i') {
+    if (lookahead == 'i' && token == _INT_) {
         if (match('i', palavra, pos) &&
             Identificador(palavra, pos))
             return 1;
