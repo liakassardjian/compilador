@@ -450,8 +450,41 @@ int Atribuicao(char palavra[], int *pos);
      ParametroOpcional -> Parametro
      ParametroOpcional -> &
 */
-int ChamadaDeProcedimento(char palavra[], int *pos);
-int ParametroOpcional(char palavra[], int *pos);
+int ChamadaDeProcedimento(char palavra[], int *pos) {
+    if (lookahead == '_') {
+        if (Identificador(palavra, pos)     &&
+            match('(', palavra, pos)        &&
+            ParametroOpcional(palavra, pos) &&
+            match(')', palavra, pos))
+            return 1;
+            
+    }
+    return 0;
+}
+
+int ParametroOpcional(char palavra[], int *pos) {
+    if (lookahead == '_' ||
+        lookahead == '0' ||
+        lookahead == '1' ||
+        lookahead == '2' ||
+        lookahead == '3' ||
+        lookahead == '4' ||
+        lookahead == '5' ||
+        lookahead == '6' ||
+        lookahead == '7' ||
+        lookahead == '8' ||
+        lookahead == '9' ||
+        lookahead == 't' ||
+        lookahead == 'f') {
+        if (Parametro(palavra, pos))
+            return 1;
+    
+    } else if (lookahead == ')') {
+        return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
