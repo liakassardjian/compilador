@@ -432,7 +432,11 @@ int ComandoCompostoOpcional(char palavra[], int *pos);
      Comando -> ComandoRepetitivo
      Comando -> print Identificador
 */
-int Comando(char palavra[], int *pos);
+int Comando(char palavra[], int *pos) {
+    if (lookahead == '_') {
+        
+    }
+}
 
 
 /*
@@ -456,7 +460,35 @@ int ParametroOpcional(char palavra[], int *pos);
      Parametro -> Bool
      Parametro -> &
 */
-int Parametro(char palavra[], int *pos);
+int Parametro(char palavra[], int *pos) {
+    if (lookahead == '_') {
+        if (Identificador(palavra, pos))
+            return 1;
+        
+    } else if (lookahead == '0' ||
+               lookahead == '1' ||
+               lookahead == '2' ||
+               lookahead == '3' ||
+               lookahead == '4' ||
+               lookahead == '5' ||
+               lookahead == '6' ||
+               lookahead == '7' ||
+               lookahead == '8' ||
+               lookahead == '9') {
+        if (Numero(palavra, pos))
+            return 1;
+        
+    } else if (lookahead == 't'||
+               lookahead == 'f') {
+        if (Bool(palavra, pos))
+            return 1;
+        
+    } else if (lookahead == ')') {
+        return 1;
+    }
+    
+    return 0;
+}
 
 
 /*
