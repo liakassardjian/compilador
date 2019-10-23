@@ -399,6 +399,9 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
                 return DeclaracoesFuncoes(palavra, pos);
             return 1;
         }
+    } else if (lookahed == 'p') {
+        return 1;
+        
     }
     return 0;
 }
