@@ -685,7 +685,21 @@ int ElseOpcional(char palavra[], int *pos);
 /*
  15. ComandoRepetitivo -> do { ComandoComposto } while ( Expressao )
 */
-int ComandoRepetitivo(char palavra[], int *pos);
+int ComandoRepetitivo(char palavra[], int *pos) {
+    if (lookahead == 'd') {
+        if (match('d', palavra, pos)        &&
+            match('{', palavra, pos)        &&
+            ComandoComposto(palavra, pos)   &&
+            match('}', palavra, pos)        &&
+            match('w', palavra, pos)        &&
+            match('(', palavra, pos)        &&
+            Expressao(palavra, pos          &&
+            match(')', palavra, pos)        &&))
+            return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
