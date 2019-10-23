@@ -227,8 +227,8 @@ int main(){
 //  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
 //    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; } $";
 
-    char *palavra = "==";
 
+    char *palavra = "+ _var * ( - 12 ) ";
 
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
@@ -244,7 +244,7 @@ int main(){
 
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
     if (token != 0) {
-        if (Relacao(palavra, &pos))
+        if (ExpressaoSimples(palavra, &pos))
             printf("\nSUCESSO NA LEITURA\n");
         else
             erro(&pos);
@@ -511,7 +511,7 @@ int ExpresaoOpcional(char palavra[], int *pos) {
         if (Relacao(palavra, pos) &&
             ExpressaoSimples(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ')' ||
                lookahead == ';') {
         return 1;
@@ -533,7 +533,7 @@ int Relacao(char palavra[], int *pos) {
     if (lookahead == '=' && token == _IGUAL_IGUAL_) {
         if (match('=', palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '<') {
         if (match('<', palavra, pos))
             return 1;
@@ -553,16 +553,68 @@ int Relacao(char palavra[], int *pos) {
      ExpressaoSimplesRep -> ExpressaoSimples ExpressaoSimplesRep
      ExpressaoSimplesRep -> &
 */
-int ExpressaoSimples(char palavra[], int *pos);
-int SinalOpcional(char palavra[], int *pos){
-    printf("SinalOpcional\n");
-    if(lookahead == '+' && match('+', palavra, pos))
-        return 1;
-    else if(lookahead == '-' && match('-', palavra, pos))
-        return 1;
+int ExpressaoSimples(char palavra[], int *pos){
+    printf("Expressao Simples\n");
+    if ((lookahead == 't' ||
+        lookahead == 'f' ||
+        lookahead == '_' ||
+        lookahead == '+' ||
+        lookahead == '-' ||
+        lookahead == '(') && SinalOpcional(palavra, pos) && Termo(palavra, pos) && ExpressaoSimplesRep(palavra, pos)){
+            return 1;
+    }
+
     return 0;
 }
-int ExpressaoSimplesRep(char palavra[], int *pos);
+
+int SinalOpcional(char palavra[], int *pos){
+    printf("SinalOpcional\n");
+    if(lookahead == '+' && match('+', palavra, pos)){
+        return 1;
+    }
+
+    else if(lookahead == '-' && match('-', palavra, pos))
+        return 1;
+    else if (lookahead == '_' ||
+        lookahead == '0' ||
+        lookahead == '1' ||
+        lookahead == '2' ||
+        lookahead == '3' ||
+        lookahead == '4' ||
+        lookahead == '5' ||
+        lookahead == '6' ||
+        lookahead == '7' ||
+        lookahead == '8' ||
+        lookahead == '9' ||
+        lookahead == 't' ||
+        lookahead == 'f' ||
+        lookahead == '(') {
+             return 1;
+        }
+    printf("erro \n");
+    return 0;
+}
+int ExpressaoSimplesRep(char palavra[], int *pos){
+    printf("Expressao Simples Rep\n");
+    if ((lookahead == 't' ||
+        lookahead == 'f' ||
+        lookahead == '_' ||
+        lookahead == '+' ||
+        lookahead == '-' ||
+        lookahead == '(') &&
+         ExpressaoSimples(palavra, pos)){
+        if(lookahead == 't' ||
+            lookahead == 'f' ||
+            lookahead == '_' ||
+            lookahead == '+' ||
+            lookahead == '-' ||
+            lookahead == '(')
+            return ExpressaoSimplesRep(palavra, pos);
+        return 1;
+    }
+
+    return 0;
+}
 
 
 /*
@@ -598,6 +650,7 @@ int Termo(char palavra[], int *pos) {
 int FatorRep(char palavra[], int *pos) {
     printf("FatorRep\n");
     if (lookahead == '*' || lookahead == '/') {
+            printf("entrou aqui\n");
         if (Operacao(palavra, pos) &&
             Fator(palavra, pos)) {
             if (lookahead == '*' || lookahead == '/') {
@@ -606,6 +659,16 @@ int FatorRep(char palavra[], int *pos) {
             return 1;
         }
     }
+    else if(lookahead == 't' ||
+        lookahead == 'f' ||
+        lookahead == '_' ||
+        lookahead == '+' ||
+        lookahead == '-' ||
+        lookahead == '('){
+        return 1;
+    }
+
+    printf("erro fator rep\n");
     return 0;
 }
 
@@ -630,7 +693,9 @@ int Operacao(char palavra[], int *pos) {
      Fator -> ( ExpressaoSimples )
 */
 int Fator(char palavra[], int *pos){
+
     printf("Fator\n");
+
     if(lookahead == '_' && Variavel(palavra, pos))
         return 1;
     else if((lookahead == '0' || lookahead == '1' || lookahead == '2' || lookahead == '3' || lookahead == '4' || lookahead == '5' || lookahead == '6'
@@ -638,12 +703,14 @@ int Fator(char palavra[], int *pos){
         return 1;
     else if((lookahead == 't' || lookahead == 'f') && Bool(palavra, pos))
         return 1;
+
     else if(lookahead == '(') {
         if (match('(', palavra, pos)        &&
             ExpressaoSimples(palavra, pos)  &&
             match(')', palavra, pos))
             return 1;
     }
+
     return 0;
 }
 
@@ -690,8 +757,10 @@ int Numero(char palavra[], int *pos){
     }
 
     else if(lookahead == '1'){
-        if(match('1', palavra, pos))
+        if(match('1', palavra, pos)){
+            printf("numero 1\n");
             return 1;
+        }
     }
 
     else if(lookahead == '2'){
@@ -734,6 +803,7 @@ int Numero(char palavra[], int *pos){
             return 1;
     }
 
+    printf("erro\n");
     return 0;
 }
 
