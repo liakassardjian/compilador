@@ -393,8 +393,14 @@ int ListaIdOpcional(char palavra[], int *pos);
     DeclaracoesFuncoes -> &
 */
 int DeclaracoesFuncoes(char palavra[], int *pos) {
-    printf("Declaracoes Funcoes\n");
-    return 1;
+    if (lookahed == 'v') {
+        if (DeclaraFuncao(palavra, pos)) {
+            if (lookahed == 'v')
+                return DeclaracoesFuncoes(palavra, pos);
+            return 1;
+        }
+    }
+    return 0;
 }
 
 
