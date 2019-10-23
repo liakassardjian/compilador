@@ -403,8 +403,31 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
     ParametroFormalOpcional -> ParametroFormal
     ParametroFormalOpcional -> &
 */
-int DeclaraFuncao(char palavra[], int *pos);
-int ParametroFormalOpcional(char palavra[], int *pos);
+int DeclaraFuncao(char palavra[], int *pos) {
+    if (lookahead == 'v') {
+        if (match('v', palavra, pos)    &&
+            Identificador(palavra, pos) &&
+            match('(', palavra, pos)    &&
+            ParametroFormalOpcional     &&
+            match(')', palavra, pos)    &&
+            Bloco(palavra, pos))
+            return 1;
+    }
+    return 0;
+}
+
+int ParametroFormalOpcional(char palavra[], int *pos) {
+    if (lookahead == 'i'||
+        lookahead == 'b') {
+        if (ParametroFormal(palavra, pos))
+            return 1;
+        
+    } else if (lookahed == ')') {
+        return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
