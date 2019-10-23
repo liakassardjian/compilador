@@ -228,7 +228,7 @@ int main(){
 //    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; } $";
 
 
-    char *palavra = "+ _var * ( - 12 ) ;";
+    char *palavra = "+ _var * ( - 12 ) < ( _abcd / ( - 24 ) ) ;";
 
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
@@ -244,7 +244,7 @@ int main(){
 
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
     if (token != 0) {
-        if (ExpressaoSimples(palavra, &pos))
+        if (Expressao(palavra, &pos))
             printf("\nSUCESSO NA LEITURA\n");
         else
             erro(&pos);
@@ -701,7 +701,8 @@ int FatorRep(char palavra[], int *pos) {
               lookahead == '+' ||
               lookahead == '-' ||
               lookahead == '(' ||
-              lookahead == ')') {
+              lookahead == ')' ||
+              lookahead == ';') {
         return 1;
     }
     return 0;
