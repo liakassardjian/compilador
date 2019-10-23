@@ -528,9 +528,34 @@ int ParametroFormal(char palavra[], int *pos) {
     ComandoCompostoOpcional -> &
 */
 int ComandoComposto(char palavra[], int *pos) {
-    return 1;
+    if (lookahead == '_'                    ||
+        (lookahead == 'i' && token == _IF_) ||
+        lookahead == 'd'                    ||
+        lookahead == 'p') {
+        if (Comando(palavra, pos)             &&
+            match(';', palavra, pos)          &&
+            ComandoCompostoOpcional(palavra, pos))
+            return 1;
+    
+    }
+    return 0;
 }
-int ComandoCompostoOpcional(char palavra[], int *pos);
+
+int ComandoCompostoOpcional(char palavra[], int *pos) {
+    if (lookahead == '_'                    ||
+        (lookahead == 'i' && token == _IF_) ||
+        lookahead == 'd'                    ||
+        lookahead == 'p') {
+            if (Comando(palavra, pos) &&
+                match(';', palavra, pos))
+                return 1;
+        
+    } else if (lookahead == '}') {
+        return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
@@ -542,6 +567,7 @@ int ComandoCompostoOpcional(char palavra[], int *pos);
      ComandoAuxiliar -> ChamadaDeProcedimento
 */
 int Comando(char palavra[], int *pos) {
+    printf("Comando\n");
     if (lookahead == '_') {
         if (Identificador(palavra, pos) &&
             ComandoAuxiliar(palavra, pos))
@@ -565,6 +591,7 @@ int Comando(char palavra[], int *pos) {
 }
 
 int ComandoAuxiliar(char palavra[], int *pos) {
+    printf("ComandoAuxiliar\n");
     if (lookahead == '=' && token == _SINAL_IGUAL_) {
         if (Atribuicao(palavra, pos))
             return 1;
