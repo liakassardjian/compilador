@@ -411,7 +411,21 @@ int ParametroFormalOpcional(char palavra[], int *pos);
  8. ParametroFormal -> int Identificador
     ParametroFormal -> bool Identificador
 */
-int ParametroFormal(char palavra[], int *pos);
+int ParametroFormal(char palavra[], int *pos) {
+    printf("ParametroFormal\n");
+    if (lookahead == 'i') {
+        if (match('i', palavra, pos) &&
+            Identificador(palavra, pos))
+            return 1;
+        
+    } else if (lookahead == 'b') {
+        if (match('b', palavra, pos) &&
+            Identificador(palavra, pos))
+            return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
@@ -433,9 +447,9 @@ int ComandoCompostoOpcional(char palavra[], int *pos);
      Comando -> print Identificador
 */
 int Comando(char palavra[], int *pos) {
-    if (lookahead == '_') {
-        
-    }
+//    if (lookahead == '_') {
+//
+//    }
 }
 
 
@@ -443,6 +457,7 @@ int Comando(char palavra[], int *pos) {
  11. Atribuicao -> Variavel = Expressao
 */
 int Atribuicao(char palavra[], int *pos) {
+    printf("Atribuicao\n");
     if (lookahead == '_') {
         if (Variavel(palavra, pos)      &&
             token = _SINAL_IGUAL_       &&
@@ -460,6 +475,7 @@ int Atribuicao(char palavra[], int *pos) {
      ParametroOpcional -> &
 */
 int ChamadaDeProcedimento(char palavra[], int *pos) {
+    printf("ChamadaDeProcedimento\n");
     if (lookahead == '_') {
         if (Identificador(palavra, pos)     &&
             match('(', palavra, pos)        &&
@@ -472,6 +488,7 @@ int ChamadaDeProcedimento(char palavra[], int *pos) {
 }
 
 int ParametroOpcional(char palavra[], int *pos) {
+    printf("ParametroOpcional\n");
     if (lookahead == '_' ||
         lookahead == '0' ||
         lookahead == '1' ||
@@ -503,6 +520,7 @@ int ParametroOpcional(char palavra[], int *pos) {
      Parametro -> &
 */
 int Parametro(char palavra[], int *pos) {
+    printf("Parametro\n");
     if (lookahead == '_') {
         if (Identificador(palavra, pos))
             return 1;
