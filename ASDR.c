@@ -678,8 +678,36 @@ int Parametro(char palavra[], int *pos) {
      ElseOpcional -> else { ComandoComposto }
      ElseOpcional -> &
 */
-int ComandoCondicional(char palavra[], int *pos);
-int ElseOpcional(char palavra[], int *pos);
+int ComandoCondicional(char palavra[], int *pos) {
+    if (lookahead == 'i' && token == _IF_) {
+        if (match('i', palavra, pos)        &&
+            match('(', palavra, pos)        &&
+            Expressao(palavra, pos)         &&
+            match(')', palavra, pos)        &&
+            match('{', palavra, pos)        &&
+            ComandoComposto(palavra, pos)   &&
+            match('}', palavra, pos)        &&
+            ElseOpcional(palavra, pos))
+            return 1;
+        
+    }
+    return 0;
+}
+
+int ElseOpcional(char palavra[], int *pos) {
+    if (lookahead == 'e') {
+        if (match('e', palavra, pos)        &&
+            match('{', palavra, pos)        &&
+            ComandoComposto(palavra, pos)   &&
+            match('}', palavra, pos))
+            return 1;
+        
+    } else if (lookahead == ';') {
+        return 1;
+        
+    }
+    return 0;
+}
 
 
 /*
