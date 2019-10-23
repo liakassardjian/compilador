@@ -442,7 +442,16 @@ int Comando(char palavra[], int *pos) {
 /*
  11. Atribuicao -> Variavel = Expressao
 */
-int Atribuicao(char palavra[], int *pos);
+int Atribuicao(char palavra[], int *pos) {
+    if (lookahead == '_') {
+        if (Variavel(palavra, pos)      &&
+            token = _SINAL_IGUAL_       &&
+            match('=', palavra, pos)    &&
+            Expressao(palavra, pos))
+            return 1;
+    }
+    return 0;
+}
 
 
 /*
