@@ -1,5 +1,8 @@
 
 /*
+ 
+ + _var * ( - 12 )
+ 
  Implementacao do Analisador Sintatico Descendente Recursivo para a gramatica:
 
  1. Programa -> DecFuncoesRep program Identificador Bloco
@@ -75,7 +78,7 @@
      ExpressaoSimplesRep -> &
 
  19. Termo -> Fator FatorRep
-     FatorRep -> Operacao Fator
+     FatorRep -> Operacao Fator FatorRep
      FatorRep -> &
      Operacao -> *
      Operacao -> /
