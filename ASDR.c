@@ -376,7 +376,13 @@ int DecVariaveisOpcional(char palavra[], int *pos) {
         if (ParteDeclaracoesDeVariaveis(palavra, pos))
             return 1;
         
-    } // else if (lookahead)
+    } else if (lookahead == '_'                    ||
+               (lookahead == 'i' && token == _IF_) ||
+               lookahead == 'd'                    ||
+               lookahead == 'p') {
+        return 1;
+        
+    }
     return 0;
 }
 
@@ -394,7 +400,13 @@ int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
                 return 1;
             return 1;
         }
-    } // else if (lookahead)
+    } else if (lookahead == '_'                    ||
+               (lookahead == 'i' && token == _IF_) ||
+               lookahead == 'd'                    ||
+               lookahead == 'p') {
+        return 1;
+        
+    }
     return 0;
 }
 
@@ -442,7 +454,13 @@ int ListaIdOpcional(char palavra[], int *pos) {
             Identificador(palavra, pos))
             return 1;
         
-    } // else if (lookahead)
+    } else if (lookahead == '_'                    ||
+               (lookahead == 'i' && token == _IF_) ||
+               lookahead == 'd'                    ||
+               lookahead == 'p') {
+        return 1;
+        
+    }
     return 0;
 }
 
@@ -528,6 +546,7 @@ int ParametroFormal(char palavra[], int *pos) {
     ComandoCompostoOpcional -> &
 */
 int ComandoComposto(char palavra[], int *pos) {
+    printf("ComandoComposto\n");
     if (lookahead == '_'                    ||
         (lookahead == 'i' && token == _IF_) ||
         lookahead == 'd'                    ||
@@ -542,6 +561,7 @@ int ComandoComposto(char palavra[], int *pos) {
 }
 
 int ComandoCompostoOpcional(char palavra[], int *pos) {
+    printf("ComandoCompostoOpcional\n");
     if (lookahead == '_'                    ||
         (lookahead == 'i' && token == _IF_) ||
         lookahead == 'd'                    ||
