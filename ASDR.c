@@ -19,9 +19,9 @@
  4. DecVariaveis -> int ListaDeIdentificadores ;
     DecVariaveis -> bool ListaDeIdentificadores ;
 
- 5. ListaDeIdentificadores -> Identificador ListaIdOpcional
-    ListaIdOpcional -> , Identificador
-    ListaIdOpcional -> &
+ 5. ListaDeIdentificadores -> Identificador ListaIdRep
+    ListaIdRep -> , Identificador ListaIdRep
+    ListaIdRep -> &
 
  6. DeclaracoesFuncoes -> DeclaraFuncao DeclaracoesFuncoes
     DeclaracoesFuncoes -> &
@@ -33,9 +33,9 @@
  8. ParametroFormal -> int Identificador
     ParametroFormal -> bool Identificador
 
- 9. ComandoComposto -> Comando ; ComandoCompostoOpcional
-    ComandoCompostoOpcional -> Comando ;
-    ComandoCompostoOpcional -> &
+ 9. ComandoComposto -> Comando ; ComandoCompostoRep
+    ComandoCompostoRep -> Comando ; ComandoCompostoRep
+    ComandoCompostoRep -> &
 
  10. Comando -> Identificador ComandoAuxiliar
      Comando -> ComandoCondicional
@@ -55,7 +55,7 @@
      Parametro -> Bool
      Parametro -> &
 
- 14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional
+ 14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional ;
      ElseOpcional -> else { ComandoComposto }
      ElseOpcional -> &
 
@@ -149,13 +149,13 @@ int DecVariaveisOpcional(char palavra[], int *pos);
 int ParteDeclaracoesDeVariaveis(char palavra[], int *pos);
 int DecVariaveis(char palavra[], int *pos);
 int ListaDeIdentificadores(char palavra[], int *pos);
-int ListaIdOpcional(char palavra[], int *pos);
+int ListaIdRep(char palavra[], int *pos);
 int DeclaracoesFuncoes(char palavra[], int *pos);
 int DeclaraFuncao(char palavra[], int *pos);
 int ParametroFormalOpcional(char palavra[], int *pos);
 int ParametroFormal(char palavra[], int *pos);
 int ComandoComposto(char palavra[], int *pos);
-int ComandoCompostoOpcional(char palavra[], int *pos);
+int ComandoCompostoRep(char palavra[], int *pos);
 int Comando(char palavra[], int *pos);
 int ComandoAuxiliar(char palavra[], int *pos);
 int Atribuicao(char palavra[], int *pos);
@@ -227,7 +227,8 @@ char * traduzToken(int t);
 
 int main(){
 //  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
-    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; }";
+//    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; }";
+    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b ; bool _d , _e ; _a = 2 ; _b = 10 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; }";
 
 
 //    char *palavra = "+ _var * ( - 12 ) < ( _abcd / ( - 24 ) ) ;";
@@ -439,26 +440,30 @@ int DecVariaveis(char palavra[], int *pos) {
 
 
 /*
- 5. ListaDeIdentificadores -> Identificador ListaIdOpcional
-    ListaIdOpcional -> , Identificador
-    ListaIdOpcional -> &
+ 5. ListaDeIdentificadores -> Identificador ListaIdRep
+    ListaIdRep -> , Identificador ListaIdRep
+    ListaIdRep -> &
 */
 int ListaDeIdentificadores(char palavra[], int *pos) {
     printf("ListaDeIdentificadores %c\n", lookahead);
     if (lookahead == '_') {
         if (Identificador(palavra, pos)     &&
-            ListaIdOpcional(palavra, pos))
+            ListaIdRep(palavra, pos))
             return 1;
     }
     return 0;
 }
 
-int ListaIdOpcional(char palavra[], int *pos) {
-    printf("ListaIdOpcional %c\n", lookahead);
+int ListaIdRep(char palavra[], int *pos) {
+    printf("ListaIdRep %c\n", lookahead);
     if (lookahead == ',') {
         if (match(',', palavra, pos)    &&
-            Identificador(palavra, pos))
+            Identificador(palavra, pos)) {
+            if (lookahead == ',')
+                return ListaIdRep(palavra, pos);
+            
             return 1;
+        }
         
     } else if (lookahead == '_'                    ||
                (lookahead == 'i' && token == _IF_) ||
@@ -549,9 +554,9 @@ int ParametroFormal(char palavra[], int *pos) {
 
 
 /*
- 9. ComandoComposto -> Comando ; ComandoCompostoOpcional
-    ComandoCompostoOpcional -> Comando ;
-    ComandoCompostoOpcional -> &
+ 9. ComandoComposto -> Comando ; ComandoCompostoRep
+    ComandoCompostoRep -> Comando ; ComandoCompostoRep
+    ComandoCompostoRep -> &
 */
 int ComandoComposto(char palavra[], int *pos) {
     printf("ComandoComposto %c\n", lookahead);
@@ -561,25 +566,28 @@ int ComandoComposto(char palavra[], int *pos) {
         lookahead == 'p') {
         if (Comando(palavra, pos)             &&
             match(';', palavra, pos)          &&
-            ComandoCompostoOpcional(palavra, pos))
+            ComandoCompostoRep(palavra, pos))
             return 1;
     
     }
     return 0;
 }
 
-int ComandoCompostoOpcional(char palavra[], int *pos) {
-    printf("ComandoCompostoOpcional %c\n", lookahead);
+int ComandoCompostoRep(char palavra[], int *pos) {
+    printf("ComandoCompostoRep %c\n", lookahead);
     if (lookahead == '_'                    ||
         (lookahead == 'i' && token == _IF_) ||
         lookahead == 'd'                    ||
         lookahead == 'p') {
-            if (Comando(palavra, pos)) {
-                if (lookahead == ';')
-                    if (match(';', palavra, pos))
-                        return 1;
-                if (lookahead == '}')
-                    return 1;
+            if (Comando(palavra, pos) &&
+                match(';', palavra, pos)) {
+                if (lookahead == '_'                    ||
+                    (lookahead == 'i' && token == _IF_) ||
+                    lookahead == 'd'                    ||
+                    lookahead == 'p')
+                    return ComandoCompostoRep(palavra, pos);
+                
+                return 1;
             }
     } else if (lookahead == '}') {
         return 1;
@@ -733,7 +741,7 @@ int Parametro(char palavra[], int *pos) {
 
 
 /*
- 14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional
+ 14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional ;
      ElseOpcional -> else { ComandoComposto }
      ElseOpcional -> &
 */
@@ -747,7 +755,8 @@ int ComandoCondicional(char palavra[], int *pos) {
             match('{', palavra, pos)        &&
             ComandoComposto(palavra, pos)   &&
             match('}', palavra, pos)        &&
-            ElseOpcional(palavra, pos))
+            ElseOpcional(palavra, pos)      &&
+            match(';', palavra, pos))
             return 1;
         
     }
