@@ -217,15 +217,12 @@ TListaConteudo *lc;
 
 void initScanner();
 int scanner(char *p, int *pos);
-void atualizaOutput(int t);
-void escreveArq();
-char * traduzToken(int t);
 
 
 /// ============================== FUNCAO MAIN
 
 int main(){
-    char *palavra = leArquivo("input.txt");
+    char *palavra = leArquivo("entrada.txt");
     
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
@@ -312,17 +309,19 @@ int match(char c, char palavra[], int *pos) {
  e o caracter encontrado nessa posicao.
  */
 void erro(int *pos, char *palavra) {
+    printf("\nENCONTRADO ERRO ");
     if (erroLexico)
-        printf("\nERRO LEXICO\n");
+        printf("LEXICO ");
     else
-        printf("\nERRO DE SINTAXE\n");
+        printf("DE SINTAXE ");
 
-    printf("POSICAO #%d: %c\n", *pos, lookahead);
+    printf("NA POSICAO #%d: %c\n\n", *pos, lookahead);
     
     int i;
     for (i = 0; i < *pos; i++) {
         printf("%c", palavra[i]);
     }
+    printf("\n");
 }
 
 char * leArquivo(char *nomeArquivo) {
@@ -355,7 +354,6 @@ char * leArquivo(char *nomeArquivo) {
     DecFuncoesRep -> &
 */
 int Programa(char palavra[], int *pos) {
-    printf("Programa %c\n", lookahead);
     // O primeiro "first" possivel para Programa eh v,
     // entao a verificacao do lookahead comeca por essa letra
     if (lookahead == 'v') {
@@ -378,7 +376,6 @@ int Programa(char palavra[], int *pos) {
 }
 
 int DecFuncoesRep(char palavra[], int *pos) {
-    printf("DecFuncoesRep %c\n", lookahead);
     if (lookahead == 'v') {
         if (DeclaracoesFuncoes(palavra, pos)) {
             if (lookahead == 'v')
@@ -399,7 +396,6 @@ int DecFuncoesRep(char palavra[], int *pos) {
     DecVariaveisOpcional -> &
 */
 int Bloco(char palavra[], int *pos) {
-    printf("Bloco %c\n", lookahead);
     if (lookahead == '{') {
         if (match('{', palavra, pos)           &&
             DecVariaveisOpcional(palavra, pos) &&
@@ -411,7 +407,6 @@ int Bloco(char palavra[], int *pos) {
 }
 
 int DecVariaveisOpcional(char palavra[], int *pos) {
-    printf("DecVariaveisOpcional %c\n", lookahead);
     if (lookahead == 'i'||
         lookahead == 'b') {
         if (ParteDeclaracoesDeVariaveis(palavra, pos))
@@ -434,7 +429,6 @@ int DecVariaveisOpcional(char palavra[], int *pos) {
     ParteDeclaracoesDeVariaveis -> &
 */
 int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
-    printf("ParteDeclaracoesDeVariaveis %c\n", lookahead);
     if ((lookahead == 'i' && token == _INT_) ||
         lookahead == 'b') {
         if (DecVariaveis(palavra, pos)) {
@@ -461,7 +455,6 @@ int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
     DecVariaveis -> bool ListaDeIdentificadores ;
 */
 int DecVariaveis(char palavra[], int *pos) {
-    printf("DecVariaveis %c\n", lookahead);
     if (lookahead == 'i' && token == _INT_) {
         if (match('i', palavra, pos)             &&
             ListaDeIdentificadores(palavra, pos) &&
@@ -485,7 +478,6 @@ int DecVariaveis(char palavra[], int *pos) {
     ListaIdRep -> &
 */
 int ListaDeIdentificadores(char palavra[], int *pos) {
-    printf("ListaDeIdentificadores %c\n", lookahead);
     if (lookahead == '_') {
         if (Identificador(palavra, pos)     &&
             ListaIdRep(palavra, pos))
@@ -495,7 +487,6 @@ int ListaDeIdentificadores(char palavra[], int *pos) {
 }
 
 int ListaIdRep(char palavra[], int *pos) {
-    printf("ListaIdRep %c\n", lookahead);
     if (lookahead == ',') {
         if (match(',', palavra, pos)    &&
             Identificador(palavra, pos)) {
@@ -522,7 +513,6 @@ int ListaIdRep(char palavra[], int *pos) {
     DeclaracoesFuncoes -> &
 */
 int DeclaracoesFuncoes(char palavra[], int *pos) {
-    printf("DeclaracoesFuncoes %c\n", lookahead);
     if (lookahead == 'v') {
         if (DeclaraFuncao(palavra, pos)) {
             if (lookahead == 'v')
@@ -543,7 +533,6 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
     ParametroFormalOpcional -> &
 */
 int DeclaraFuncao(char palavra[], int *pos) {
-    printf("DeclaraFuncao %c\n", lookahead);
     if (lookahead == 'v') {
         if (match('v', palavra, pos)              &&
             Identificador(palavra, pos)           &&
@@ -558,7 +547,6 @@ int DeclaraFuncao(char palavra[], int *pos) {
 }
 
 int ParametroFormalOpcional(char palavra[], int *pos) {
-    printf("ParametroFormalOpcional %c\n", lookahead);
     if (lookahead == 'i'||
         lookahead == 'b') {
         if (ParametroFormal(palavra, pos))
@@ -577,7 +565,6 @@ int ParametroFormalOpcional(char palavra[], int *pos) {
     ParametroFormal -> bool Identificador
 */
 int ParametroFormal(char palavra[], int *pos) {
-    printf("ParametroFormal %c\n", lookahead);
     if (lookahead == 'i' && token == _INT_) {
         if (match('i', palavra, pos) &&
             Identificador(palavra, pos))
@@ -599,7 +586,6 @@ int ParametroFormal(char palavra[], int *pos) {
     ComandoCompostoRep -> &
 */
 int ComandoComposto(char palavra[], int *pos) {
-    printf("ComandoComposto %c\n", lookahead);
     if (lookahead == '_'                    ||
         (lookahead == 'i' && token == _IF_) ||
         lookahead == 'd'                    ||
@@ -614,7 +600,6 @@ int ComandoComposto(char palavra[], int *pos) {
 }
 
 int ComandoCompostoRep(char palavra[], int *pos) {
-    printf("ComandoCompostoRep %c\n", lookahead);
     if (lookahead == '_'                    ||
         (lookahead == 'i' && token == _IF_) ||
         lookahead == 'd'                    ||
@@ -646,7 +631,6 @@ int ComandoCompostoRep(char palavra[], int *pos) {
      ComandoAuxiliar -> ChamadaDeProcedimento
 */
 int Comando(char palavra[], int *pos) {
-    printf("Comando %c\n", lookahead);
     if (lookahead == '_') {
         if (Identificador(palavra, pos) &&
             ComandoAuxiliar(palavra, pos))
@@ -671,7 +655,6 @@ int Comando(char palavra[], int *pos) {
 }
 
 int ComandoAuxiliar(char palavra[], int *pos) {
-    printf("ComandoAuxiliar %c\n", lookahead);
     if (lookahead == '=' && token == _SINAL_IGUAL_) {
         if (Atribuicao(palavra, pos))
             return 1;
@@ -681,7 +664,6 @@ int ComandoAuxiliar(char palavra[], int *pos) {
             return 1;
         
     }
-    printf("comando auxiliar erro\n");
     return 0;
 }
 
@@ -690,7 +672,6 @@ int ComandoAuxiliar(char palavra[], int *pos) {
  11. Atribuicao -> Variavel = Expressao
 */
 int Atribuicao(char palavra[], int *pos) {
-    printf("Atribuicao %c\n", lookahead);
     if (lookahead == '=' && token == _SINAL_IGUAL_) {
         if (match('=', palavra, pos)    &&
             Expressao(palavra, pos))
@@ -706,7 +687,6 @@ int Atribuicao(char palavra[], int *pos) {
      ParametroOpcional -> &
 */
 int ChamadaDeProcedimento(char palavra[], int *pos) {
-    printf("ChamadaDeProcedimento %c\n", lookahead);
     if (lookahead == '(') {
         if (match('(', palavra, pos)        &&
             ParametroOpcional(palavra, pos) &&
@@ -718,7 +698,6 @@ int ChamadaDeProcedimento(char palavra[], int *pos) {
 }
 
 int ParametroOpcional(char palavra[], int *pos) {
-    printf("ParametroOpcional %c\n", lookahead);
     if (lookahead == '_' ||
         lookahead == '0' ||
         lookahead == '1' ||
@@ -750,7 +729,6 @@ int ParametroOpcional(char palavra[], int *pos) {
      Parametro -> &
 */
 int Parametro(char palavra[], int *pos) {
-    printf("Parametro %c\n", lookahead);
     if (lookahead == '_') {
         if (Identificador(palavra, pos))
             return 1;
@@ -787,7 +765,6 @@ int Parametro(char palavra[], int *pos) {
      ElseOpcional -> &
 */
 int ComandoCondicional(char palavra[], int *pos) {
-    printf("ComandoCondicional %c\n", lookahead);
     if (lookahead == 'i' && token == _IF_) {
         if (match('i', palavra, pos)        &&
             match('(', palavra, pos)        &&
@@ -804,7 +781,6 @@ int ComandoCondicional(char palavra[], int *pos) {
 }
 
 int ElseOpcional(char palavra[], int *pos) {
-    printf("ElseOpcional %c\n", lookahead);
     if (lookahead == 'e') {
         if (match('e', palavra, pos)        &&
             match('{', palavra, pos)        &&
@@ -825,7 +801,6 @@ int ElseOpcional(char palavra[], int *pos) {
  15. ComandoRepetitivo -> do { ComandoComposto } while ( Expressao )
 */
 int ComandoRepetitivo(char palavra[], int *pos) {
-    printf("ComandoRepetitivo %c\n", lookahead);
     if (lookahead == 'd') {
         if (match('d', palavra, pos)        &&
             match('{', palavra, pos)        &&
@@ -847,7 +822,6 @@ int ComandoRepetitivo(char palavra[], int *pos) {
      ExpresaoOpcional -> Relacao ExpressaoSimples
 */
 int Expressao(char palavra[], int *pos) {
-    printf("Expressao %c\n", lookahead);
     if (lookahead == '+' ||
         lookahead == '-' ||
         lookahead == '_' ||
@@ -872,7 +846,6 @@ int Expressao(char palavra[], int *pos) {
 }
 
 int ExpresaoOpcional(char palavra[], int *pos) {
-    printf("ExpressaoOpcional %c\n", lookahead);
     if ((lookahead == '=' && token == _IGUAL_IGUAL_) ||
         lookahead == '<'                             ||
         lookahead == '>') {
@@ -897,7 +870,6 @@ int ExpresaoOpcional(char palavra[], int *pos) {
      Relacao -> >
 */
 int Relacao(char palavra[], int *pos) {
-    printf("Relacao %c\n", lookahead);
     if (lookahead == '=' && token == _IGUAL_IGUAL_) {
         if (match('=', palavra, pos))
             return 1;
@@ -922,7 +894,6 @@ int Relacao(char palavra[], int *pos) {
      ExpressaoSimplesRep -> &
 */
 int ExpressaoSimples(char palavra[], int *pos){
-    printf("Expressao Simples %c\n", lookahead);
     if (lookahead == 't' ||
         lookahead == 'f' ||
         lookahead == '_' ||
@@ -949,7 +920,6 @@ int ExpressaoSimples(char palavra[], int *pos){
 }
 
 int SinalOpcional(char palavra[], int *pos){
-    printf("SinalOpcional %c\n", lookahead);
     if(lookahead == '+' && match('+', palavra, pos)){
         return 1;
     }
@@ -976,7 +946,6 @@ int SinalOpcional(char palavra[], int *pos){
 }
 
 int ExpressaoSimplesRep(char palavra[], int *pos){
-    printf("Expressao Simples Rep %c\n", lookahead);
     if (lookahead == 't' ||
         lookahead == 'f' ||
         lookahead == '_' ||
@@ -1031,7 +1000,6 @@ int ExpressaoSimplesRep(char palavra[], int *pos){
      Operacao -> /
 */
 int Termo(char palavra[], int *pos) {
-    printf("Termo %c\n", lookahead);
     if (lookahead == '_' ||
         lookahead == '0' ||
         lookahead == '1' ||
@@ -1054,7 +1022,6 @@ int Termo(char palavra[], int *pos) {
 }
 
 int FatorRep(char palavra[], int *pos) {
-    printf("FatorRep %c\n", lookahead);
     if (lookahead == '*' || lookahead == '/') {
         if (Operacao(palavra, pos) &&
             Fator(palavra, pos)) {
@@ -1080,7 +1047,6 @@ int FatorRep(char palavra[], int *pos) {
 }
 
 int Operacao(char palavra[], int *pos) {
-    printf("Operacao %c\n", lookahead);
     if (lookahead == '*') {
         if (match('*', palavra, pos))
             return 1;
@@ -1100,7 +1066,6 @@ int Operacao(char palavra[], int *pos) {
      Fator -> ( ExpressaoSimples )
 */
 int Fator(char palavra[], int *pos) {
-    printf("Fator %c\n", lookahead);
     if(lookahead == '_' && Variavel(palavra, pos))
         return 1;
     else if((lookahead == '0' ||
@@ -1133,7 +1098,6 @@ int Fator(char palavra[], int *pos) {
  21. Variavel -> Identificador
 */
 int Variavel(char palavra[], int *pos) {
-    printf("Variavel %c\n", lookahead);
     if (lookahead == '_') {
         if (Identificador(palavra,pos))
             return 1;
@@ -1147,7 +1111,6 @@ int Variavel(char palavra[], int *pos) {
      Bool -> false
 */
 int Bool(char palavra[], int *pos) {
-    printf("Bool %c\n", lookahead);
     if (lookahead == 't') {
         if (match('t', palavra, pos))
             return 1;
@@ -1163,8 +1126,7 @@ int Bool(char palavra[], int *pos) {
 /*
  23. Numero -> num
 */
-int Numero(char palavra[], int *pos){
-    printf("Numero %c\n", lookahead);
+int Numero(char palavra[], int *pos) {
     if(lookahead == '0'){
         if(match('0', palavra, pos))
             return 1;
@@ -1223,7 +1185,6 @@ int Numero(char palavra[], int *pos){
  24. Identificador -> id
 */
 int Identificador(char palavra[], int *pos) {
-    printf("Identificador %c\n", lookahead);
     if (lookahead == '_') {
         if (match('_', palavra, pos))
             return 1;
@@ -1340,92 +1301,9 @@ void freeListaConteudo() {
 
 /// ============================== IMPLEMENTACAO DOS METODOS RELATIVOS AO SCANNER DO ANALISADOR LEXICO
 
-void atualizaOutput(int t) {
-    char *texto = traduzToken(t);
-
-    if ((t == _NUM_) || (t == _IDENTIFICADOR_) || (t == _COMENTARIO_)) {
-        char *conteudo = listaToString();
-        insereElementoListaConteudo(t, conteudo);
-    }
-    else {
-        insereElementoListaConteudo(t, 0);
-    }
-}
-
 void initScanner() {
     l = initLista();
     lc = initListaConteudo();
-}
-
-char * traduzToken(int t) {
-    switch(t) {
-        case _ERRO_LEXICO_:
-            return "ERRO_LEXICO";
-        case _MENOR_IGUAL_:
-            return "MENOR_IGUAL";
-        case _DIFERENTE_:
-            return "DIFERENTE";
-        case _MENOR_:
-            return "MENOR";
-        case _DIVISAO_:
-            return "DIVISAO";
-        case _COMENTARIO_:
-            return "COMENTARIO";
-        case _IDENTIFICADOR_:
-            return "IDENTIFICADOR";
-        case _IF_:
-            return "IF";
-        case _INT_:
-            return "INT";
-        case _BOOL_:
-            return "BOOL";
-        case _PROGRAM_:
-            return "PROGRAM";
-        case _PRINT_:
-            return "PRINT";
-        case _VOID_:
-            return "VOID";
-        case _TRUE_:
-            return "TRUE";
-        case _FALSE_:
-            return "FALSE";
-        case _DO_:
-            return "DO";
-        case _ELSE_:
-            return "ELSE";
-        case _WHILE_:
-            return "WHILE";
-        case _ABRE_CHAVES_:
-            return "ABRE_CHAVES";
-        case _FECHA_CHAVES_:
-            return "FECHA_CHAVES";
-        case _PONTO_VIRGULA_:
-            return "PONTO_VIRGULA";
-        case _VIRGULA_:
-            return "VIRGULA";
-        case _ABRE_PARENTESES_:
-            return "ABRE_PARENTESES";
-        case _FECHA_PARENTESES_:
-            return "FECHA_PARENTESES";
-        case _SINAL_MAIS_:
-            return "SINAL_MAIS";
-        case _SINAL_IGUAL_:
-            return "SINAL_IGUAL";
-        case _IGUAL_IGUAL_:
-            return "IGUAL_IGUAL";
-        case _MAIOR_:
-            return "MAIOR";
-        case _MAIOR_IGUAL_:
-            return "MAIOR_IGUAL";
-        case _SINAL_MENOS_:
-            return "SINAL_MENOS";
-        case _SINAL_MULTIPLICACAO_:
-            return "SINAL_MULTIPLICACAO";
-        case _NUM_:
-            return "NUM";
-        default:
-            return "";
-    }
 }
 
 int scanner(char *p, int *pos) {
