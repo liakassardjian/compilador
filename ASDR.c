@@ -1,5 +1,11 @@
 
 /*
+ Caio Augusto     31782809
+ Leandro Soares   31715125
+ Lia Kassardjian  31750370
+ Vitor Barbosa    31780881
+ TURMA 6G
+ 
  Implementacao do Analisador Sintatico Descendente Recursivo para a gramatica:
 
  1. Programa -> DecFuncoesRep program Identificador Bloco
