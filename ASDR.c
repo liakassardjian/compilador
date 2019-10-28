@@ -1,8 +1,5 @@
 
 /*
- 
- + _var * ( - 12 )
- 
  Implementacao do Analisador Sintatico Descendente Recursivo para a gramatica:
 
  1. Programa -> DecFuncoesRep program Identificador Bloco
@@ -40,7 +37,7 @@
  10. Comando -> Identificador ComandoAuxiliar
      Comando -> ComandoCondicional
      Comando -> ComandoRepetitivo
-     Comando -> print Identificador
+     Comando -> print ( Identificador )
      ComandoAuxiliar -> Atribuicao
      ComandoAuxiliar -> ChamadaDeProcedimento
         
@@ -102,6 +99,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 
 /// ============================== TOKENS
@@ -186,7 +184,8 @@ int Identificador(char palavra[], int *pos);
 char lookahead;
 int token;
 int match(char c, char palavra[], int *pos);
-void erro(int *pos);
+void erro(int *pos, char *palavra);
+char* leArquivo(char *nomeArquivo);
 int erroLexico = 0;
 
 
@@ -226,13 +225,8 @@ char * traduzToken(int t);
 /// ============================== FUNCAO MAIN
 
 int main(){
-//  A PALAVRA A SEGUIR EH UMA TRANSCRICAO DE UM PROGRAMA DENTRO DE UMA UNICA STRING PARA TESTE DO SISTEMA COMO UM TODO
-//    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b , _c ; bool _d , _e , _f ; /* comentario */ _a = 2 ; _b = 10 ; _c = 11 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; /* outro comentario */ if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; }";
-    char *palavra = "void _proc ( int _a ) { int _a ; _a = 1 ; if ( _a < 1 ) { _a = 12 ; } } program _correto { int _a , _b ; bool _d , _e ; _a = 2 ; _b = 10 ; _a = _b + _c ; _d = true ; _e = false ; _f = true ; print ( _b ) ; if ( _d ) { _a = 20 ; _b = 10 * _c ; _c = _a / _b ; } do { if ( _b > 10 ) { _b = 2 ; _a = _a - 1 ; } else { _a = _a - 1 ; } } while ( _a > 1 ) ; }";
-
-
-//    char *palavra = "+ _var * ( - 12 ) < ( _abcd / ( - 24 ) ) ;";
-
+    char *palavra = leArquivo("input.txt");
+    
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
 
@@ -250,10 +244,10 @@ int main(){
         if (Programa(palavra, &pos))
             printf("\nSUCESSO NA LEITURA\n");
         else
-            erro(&pos);
+            erro(&pos, palavra);
     } else {
         erroLexico = 1;
-        erro(&pos);
+        erro(&pos, palavra);
     }
 
 
@@ -273,12 +267,31 @@ int match(char c, char palavra[], int *pos) {
     // Verifica se o lookahead eh igual ao caracter recebido
     if (lookahead == c) {
 
+        // Remove os espaços da palavra para que o lookahead seja o próximo caracter
+        while(palavra[*pos] == ' ')  {
+            (*pos)++;
+        }
+
         // Atualiza o lookahead com o proximo caracter
         lookahead = palavra[*pos];
-
+        
         // Atualiza o token com o resultado da chamada de scanner,
         // que ja atualiza pos para o primeiro caracter da proxima palavra
         token = scanner(palavra, pos);
+        
+        while (token == _COMENTARIO_) {
+            // Remove os espaços da palavra para que o lookahead seja o próximo caracter
+            while(palavra[*pos] == ' ')  {
+                (*pos)++;
+            }
+
+            // Atualiza o lookahead com o proximo caracter
+            lookahead = palavra[*pos];
+            
+            // Atualiza o token com o resultado da chamada de scanner,
+            // que ja atualiza pos para o primeiro caracter da proxima palavra
+            token = scanner(palavra, pos);
+        }
 
         // Verifica que o token retornou erro lexico.
         if (!token) {
@@ -288,6 +301,7 @@ int match(char c, char palavra[], int *pos) {
             return 0;
         }
         return 1;
+        
     }
     return 0;
 }
@@ -297,13 +311,39 @@ int match(char c, char palavra[], int *pos) {
  juntamente com a posicao na qual o ASDR foi interrompido
  e o caracter encontrado nessa posicao.
  */
-void erro(int *pos) {
+void erro(int *pos, char *palavra) {
     if (erroLexico)
         printf("\nERRO LEXICO\n");
     else
         printf("\nERRO DE SINTAXE\n");
 
     printf("POSICAO #%d: %c\n", *pos, lookahead);
+    
+    int i;
+    for (i = 0; i < *pos; i++) {
+        printf("%c", palavra[i]);
+    }
+}
+
+char * leArquivo(char *nomeArquivo) {
+    FILE *arq;
+    arq = fopen(nomeArquivo, "rt");
+    if (!arq) return 0;
+    char c;
+    char *resultado = malloc(720 * sizeof(char));
+    // TODO:  realocar caso extrapole
+    int cont = 0;
+    
+    while ((c = getc(arq)) != EOF) {
+        if (c != '\n' && c != '\t') {
+            resultado[cont] = c;
+            cont++;
+        }
+    }
+    resultado[cont] = '\0';
+    fclose(arq);
+    
+    return resultado;
 }
 
 
@@ -601,7 +641,7 @@ int ComandoCompostoRep(char palavra[], int *pos) {
  10. Comando -> Identificador ComandoAuxiliar
      Comando -> ComandoCondicional
      Comando -> ComandoRepetitivo
-     Comando -> print Identificador
+     Comando -> print ( Identificador )
      ComandoAuxiliar -> Atribuicao
      ComandoAuxiliar -> ChamadaDeProcedimento
 */
@@ -621,11 +661,12 @@ int Comando(char palavra[], int *pos) {
         
     } else if (lookahead == 'p') {
         if (match('p', palavra, pos)    &&
-            Identificador(palavra, pos))
+            match('(', palavra, pos)    &&
+            Identificador(palavra, pos) &&
+            match(')', palavra, pos))
             return 1;
         
     }
-    printf("comando erro\n");
     return 0;
 }
 
@@ -741,7 +782,7 @@ int Parametro(char palavra[], int *pos) {
 
 
 /*
- 14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional ;
+ 14. ComandoCondicional -> if ( Expressao ) { ComandoComposto } ElseOpcional
      ElseOpcional -> else { ComandoComposto }
      ElseOpcional -> &
 */
@@ -755,12 +796,10 @@ int ComandoCondicional(char palavra[], int *pos) {
             match('{', palavra, pos)        &&
             ComandoComposto(palavra, pos)   &&
             match('}', palavra, pos)        &&
-            ElseOpcional(palavra, pos)      &&
-            match(';', palavra, pos))
+            ElseOpcional(palavra, pos))
             return 1;
         
     }
-    printf("comando condicional erro\n");
     return 0;
 }
 
@@ -778,7 +817,6 @@ int ElseOpcional(char palavra[], int *pos) {
         return 1;
         
     }
-    printf("else opcional erro\n");
     return 0;
 }
 
@@ -1388,22 +1426,6 @@ char * traduzToken(int t) {
         default:
             return "";
     }
-}
-
-void escreveArq() {
-    FILE *arq = fopen("output.txt", "w");
-
-    TNoConteudo *no;
-    for (no = lc->ini; no != 0; no = no->prox) {
-        if(no->c == 0) {
-            fprintf(arq, "<%s>\n", traduzToken(no->t));
-        }
-        else {
-            fprintf(arq, "<%s, %s>\n", traduzToken(no->t), no->c);
-        }
-    }
-
-    fclose(arq);
 }
 
 int scanner(char *p, int *pos) {
