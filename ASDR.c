@@ -6,7 +6,8 @@
  Vitor Barbosa    31780881
  TURMA 6G
  
- Implementacao do Analisador Sintatico Descendente Recursivo para a gramatica:
+ IMPLEMENTACAO DO ANALISADOR SINTATICO DESCENDENTE RECURSIVO PARA A GRAMATICA:
+ (A GRAMATICA FOI ADAPTADA DE MODO QUE O ANALISADOR POSSA FUNCIONAR CORRETAMENTE)
 
  1. Programa -> DecFuncoesRep program Identificador Bloco
     DecFuncoesRep -> DeclaracoesFuncoes DecFuncoesRep
@@ -40,6 +41,12 @@
     ComandoCompostoRep -> Comando ; ComandoCompostoRep
     ComandoCompostoRep -> &
 
+        DEVIDO A PRESENCA DE FIRST IGUAIS EM DIFERENTES DERIVACOES DE COMANDO,
+        OS NAO-TERMINAIS COMANDO, ATRIBUICAO E CHAMADA DE PROCEDIMENTO FORAM
+        ATUALIZADOS A FIM DE EVITAR PROBLEMAS COM O ANALISADOR SINTATICO. FOI
+        INSERIDO UM NAO-TERMINAL AUXILIAR PARA DIRECIONAR PARA ATRIBUICAO OU
+        CHAMADA DE PROCEDIMENTO.
+ 
  10. Comando -> Identificador ComandoAuxiliar
      Comando -> ComandoCondicional
      Comando -> ComandoRepetitivo
@@ -47,9 +54,9 @@
      ComandoAuxiliar -> Atribuicao
      ComandoAuxiliar -> ChamadaDeProcedimento
         
- 11. Atribuicao -> Variavel = Expressao
+ 11. Atribuicao -> = Expressao
 
- 12. ChamadaDeProcedimento -> Identificador ( ParametroOpcional )
+ 12. ChamadaDeProcedimento -> ( ParametroOpcional )
      ParametroOpcional -> Parametro
      ParametroOpcional -> &
 
@@ -91,7 +98,7 @@
      Fator -> Numero
      Fator -> Bool
      Fator -> ( ExpressaoSimples )
-
+ 
  21. Variavel -> Identificador
 
  22. Bool -> true
@@ -144,7 +151,7 @@
 #define _NUM_                 31 // 0123456789
 
 
-/// ============================== DECLARACAO DAS FUNCOES RECURSIVAS DOS SIMBOLOS NAO TERMINAIS
+/// ============================== DECLARACAO DAS FUNCOES RECURSIVAS DOS SIMBOLOS NAO-TERMINAIS
 
 int Programa(char palavra[], int *pos);
 int DecFuncoesRep(char palavra[], int *pos);
@@ -197,6 +204,11 @@ int erroLexico = 0;
 
 /// ============================== DECLARACAO DA TAD LISTA LIGADA USADA PELO ANALISADOR LEXICO
 
+/*
+ A TAD TLista armazena os caracteres lidos no caso de identificadores, numeros e comentarios,
+ a fim de guardar de forma ligada o nome das variaveis, os numeros em si ou os textos dos comentarios.
+ */
+
 typedef struct TNo TNo;
 typedef struct TLista TLista;
 TLista * initLista();
@@ -206,17 +218,6 @@ void freeLista();
 char * listaToString();
 
 TLista *l;
-
-
-/// ============================== DECLARACAO DA TAD LISTA LIGADA USADA PELO ANALISADOR LEXICO PARA ARMAZENAR O CONTEUDO
-
-typedef struct TNoConteudo TNoConteudo;
-typedef struct TListaConteudo TListaConteudo;
-TListaConteudo * initListaConteudo();
-void insereElementoListaConteudo(int t, char *c);
-void freeListaConteudo();
-
-TListaConteudo *lc;
 
 
 /// ============================== DECLARACAO DOS METODOS RELATIVOS AO SCANNER DO ANALISADOR LEXICO
@@ -334,12 +335,16 @@ char * leArquivo(char *nomeArquivo) {
     FILE *arq;
     arq = fopen(nomeArquivo, "rt");
     if (!arq) return 0;
+    int cont = 0, tam = 720;
     char c;
-    char *resultado = malloc(720 * sizeof(char));
-    // TODO:  realocar caso extrapole
-    int cont = 0;
+    char *resultado = malloc(tam * sizeof(char));
     
     while ((c = getc(arq)) != EOF) {
+        if (cont == tam - 1) {
+            tam *= 2;
+            resultado = realloc(resultado, tam);
+        }
+        
         if (c != '\n' && c != '\t') {
             resultado[cont] = c;
             cont++;
@@ -352,7 +357,7 @@ char * leArquivo(char *nomeArquivo) {
 }
 
 
-/// ============================== IMPLEMENTACAO DAS FUNCOES RECURSIVAS DOS SIMBOLOS NAO TERMINAIS
+/// ============================== IMPLEMENTACAO DAS FUNCOES RECURSIVAS DOS SIMBOLOS NAO-TERMINAIS
 
 /*
  1. Programa -> DecFuncoesRep program Identificador Bloco
@@ -675,7 +680,7 @@ int ComandoAuxiliar(char palavra[], int *pos) {
 
 
 /*
- 11. Atribuicao -> Variavel = Expressao
+ 11. Atribuicao -> = Expressao
 */
 int Atribuicao(char palavra[], int *pos) {
     if (lookahead == '=' && token == _SINAL_IGUAL_) {
@@ -688,7 +693,7 @@ int Atribuicao(char palavra[], int *pos) {
 
 
 /*
- 12. ChamadaDeProcedimento -> Identificador ( ParametroOpcional )
+ 12. ChamadaDeProcedimento -> ( ParametroOpcional )
      ParametroOpcional -> Parametro
      ParametroOpcional -> &
 */
@@ -1262,54 +1267,10 @@ char * listaToString() {
 }
 
 
-/// ============================== IMPLEMENTACAO DA TAD LISTA LIGADA USADA PELO ANALISADOR LEXICO PARA ARMAZENAR O CONTEUDO
-
-struct TNoConteudo {
-    struct TNoConteudo *prox;
-    char *c; // Nome da variável ou número
-    int t;    // Token do lexema
-};
-
-struct TListaConteudo {
-    TNoConteudo *ini;
-    TNoConteudo *fim;
-};
-
-TListaConteudo * initListaConteudo() {
-    TListaConteudo *l = malloc(sizeof(TListaConteudo));
-    l->ini = 0;
-    l->fim = 0;
-    return l;
-};
-
-void insereElementoListaConteudo(int t, char *c) {
-    TNoConteudo *no = malloc(sizeof(TNoConteudo));
-    no->c = c;
-    no->t = t;
-    no->prox = 0;
-
-    // Insersao na lista vazia
-    if(lc->ini == 0) {
-        lc->ini = no;
-        lc->fim = no;
-    }
-    // Lista com um ou mais elementos
-    else {
-        lc->fim->prox = no;
-        lc->fim = no;
-    }
-};
-
-void freeListaConteudo() {
-    free(lc);
-}
-
-
 /// ============================== IMPLEMENTACAO DOS METODOS RELATIVOS AO SCANNER DO ANALISADOR LEXICO
 
 void initScanner() {
     l = initLista();
-    lc = initListaConteudo();
 }
 
 int scanner(char *p, int *pos) {

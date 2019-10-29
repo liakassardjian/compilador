@@ -1,5 +1,5 @@
 
-void _proc ( int _a ) { 
+void _proc ( int _a ) {  
     int  _a ; 
     _a = 1 ; 
     if ( _a < 1 ) { 
