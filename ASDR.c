@@ -198,7 +198,7 @@ char lookahead;
 int token;
 int match(char c, char palavra[], int *pos);
 void erro(int *pos, char *palavra);
-char* leArquivo(char *nomeArquivo);
+char *leArquivo(char *nomeArquivo);
 int erroLexico = 0;
 
 
@@ -230,6 +230,11 @@ int scanner(char *p, int *pos);
 
 int main(){
     char *palavra = leArquivo("entrada.txt");
+    
+    if (!palavra) {
+        printf("ERRO NA LEITURA DO ARQUIVO\n");
+        return 1;
+    }
     
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
@@ -331,18 +336,20 @@ void erro(int *pos, char *palavra) {
     printf("\n");
 }
 
-char * leArquivo(char *nomeArquivo) {
+char *leArquivo(char *nomeArquivo) {
     FILE *arq;
     arq = fopen(nomeArquivo, "rt");
-    if (!arq) return 0;
+    if (!arq) return NULL;
     int cont = 0, tam = 720;
     char c;
     char *resultado = malloc(tam * sizeof(char));
+    if (!resultado) return NULL;
     
     while ((c = getc(arq)) != EOF) {
         if (cont == tam - 1) {
             tam *= 2;
             resultado = realloc(resultado, tam);
+            if (!resultado) return NULL;
         }
         
         if (c != '\n' && c != '\t') {
