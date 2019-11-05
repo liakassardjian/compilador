@@ -1,11 +1,10 @@
-
 /*
  Caio Augusto     31782809
  Leandro Soares   31715125
  Lia Kassardjian  31750370
  Vitor Barbosa    31780881
  TURMA 6G
- 
+
  IMPLEMENTACAO DO ANALISADOR SINTATICO DESCENDENTE RECURSIVO PARA A GRAMATICA:
  (A GRAMATICA FOI ADAPTADA DE MODO QUE O ANALISADOR POSSA FUNCIONAR CORRETAMENTE)
 
@@ -46,14 +45,14 @@
         ATUALIZADOS A FIM DE EVITAR PROBLEMAS COM O ANALISADOR SINTATICO. FOI
         INSERIDO UM NAO-TERMINAL AUXILIAR PARA DIRECIONAR PARA ATRIBUICAO OU
         CHAMADA DE PROCEDIMENTO.
- 
+
  10. Comando -> Identificador ComandoAuxiliar
      Comando -> ComandoCondicional
      Comando -> ComandoRepetitivo
      Comando -> print ( Identificador )
      ComandoAuxiliar -> Atribuicao
      ComandoAuxiliar -> ChamadaDeProcedimento
-        
+
  11. Atribuicao -> = Expressao
 
  12. ChamadaDeProcedimento -> ( ParametroOpcional )
@@ -98,7 +97,7 @@
      Fator -> Numero
      Fator -> Bool
      Fator -> ( ExpressaoSimples )
- 
+
  21. Variavel -> Identificador
 
  22. Bool -> true
@@ -226,16 +225,123 @@ void initScanner();
 int scanner(char *p, int *pos);
 
 
+/// ============================== TABELA DE SÍMBOLOS
+// Tipos de identificadores
+#define NULO   0
+#define INT    1
+#define BOOL   2
+#define FUNCAO 3
+
+typedef struct Simbolo Simbolo;
+typedef struct Simbolo{
+    char * nome; // Nome do identificador
+    int tipo;   // Indica se o elemento é int, bool ou função
+    int tipoParametroFuncao; // Caso seja uma função, indica se o parametro é bool, int ou null (sem parametro)
+    Simbolo * prox; // Aponta para o proximo simbolo da tabela
+}Simbolo;
+
+typedef struct TabelaSimbolos{
+    Simbolo * init; // Lista ligada de simbolos
+}TabelaSimbolos;
+
+TabelaSimbolos * initTabelaSimbolos(){
+    TabelaSimbolos * ts = (TabelaSimbolos *) calloc(1, sizeof(TabelaSimbolos));
+    ts->init = 0;
+    return ts;
+}
+
+int insereVariavelTabelaSimbolos(char * nome, int tipo, TabelaSimbolos * ts){
+    if(simboloJaExiste(nome, ts)){
+        printf("Simbolo '%s' ja existente!\n", nome);
+        return 0;
+    }
+
+    Simbolo * s = (Simbolo *) calloc(1, sizeof(Simbolo));
+    s->nome = nome;
+    s->tipo = tipo;
+    s->tipoParametroFuncao = NULL;
+
+    s->prox = ts->init;
+    ts->init = s;
+
+    return 1; // Símbolo inserido na tabela
+}
+
+int insereFuncaoTabelaSimbolos(char * nome, char * nomeParametroFuncao, int tipoParametroFuncao, TabelaSimbolos * ts){
+    if(simboloJaExiste(nome, ts)){
+        printf("Simbolo '%s' ja existente!\n", nome);
+        return 0;
+    }
+
+    Simbolo * s = (Simbolo *) calloc(1, sizeof(Simbolo));
+    s->nome = nome;
+    s->tipo = FUNCAO;
+    s->tipoParametroFuncao = tipoParametroFuncao;
+
+    s->prox = ts->init;
+    ts->init = s;
+
+    // Caso a função receba parâmetros, adicionamos ela como uma variável
+    if(tipoParametroFuncao != NULL){
+        insereVariavelTabelaSimbolos(nomeParametroFuncao, tipoParametroFuncao, ts);
+    }
+
+    return 1; // Símbolo inserido na tabela
+}
+
+int simboloJaExiste(char * simbolo, TabelaSimbolos * ts){
+    Simbolo * temp;
+    for(temp = ts->init; temp; temp = temp->prox){
+        if(!strcmp(simbolo, temp->nome)){
+            return 1;
+        }
+    }
+    return 0;
+}
+
+void printTabelaSimbolos(TabelaSimbolos * ts){
+    Simbolo * temp;
+    puts("==============================================");
+    puts("============= TABELA DE SIMBOLOS =============");
+    puts("==============================================");
+    for(temp = ts->init; temp; temp = temp->prox){
+        printf("Simbolo '%s':\n", temp->nome);
+
+        if((temp->tipo == INT || temp->tipo == BOOL)){
+            printf("-> Variavel do tipo: %s\n", temp->tipo == INT?"INT":"BOOL");
+        }
+        else{
+            printf("-> Funcao\n");
+            if(temp->tipoParametroFuncao == INT){
+                printf("-> Tipo do parametro da funcao: INT\n");
+            }
+            else if(temp->tipoParametroFuncao == BOOL){
+                printf("-> Tipo do parametro da funcao: BOOL\n");
+            }
+        }
+        puts("==============================================");
+    }
+}
+
 /// ============================== FUNCAO MAIN
 
 int main(){
+    // Teste tabela de simbolos
+    TabelaSimbolos * ts = initTabelaSimbolos();
+    insereVariavelTabelaSimbolos("_x", INT, ts);
+    insereVariavelTabelaSimbolos("_z", BOOL, ts);
+    insereVariavelTabelaSimbolos("_x", INT, ts);
+    insereFuncaoTabelaSimbolos("_funcao", NULL, NULL, ts);
+    insereFuncaoTabelaSimbolos("funcao2", "x", INT, ts);
+    printTabelaSimbolos(ts);
+/* MAIN ANTIGO
     char *palavra = leArquivo("entrada.txt");
-    
+
     if (!palavra) {
         printf("ERRO NA LEITURA DO ARQUIVO\n");
         return 1;
     }
-    
+
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
 
@@ -258,8 +364,7 @@ int main(){
         erroLexico = 1;
         erro(&pos, palavra);
     }
-
-
+*/
     return 0;
 }
 
@@ -283,11 +388,11 @@ int match(char c, char palavra[], int *pos) {
 
         // Atualiza o lookahead com o proximo caracter
         lookahead = palavra[*pos];
-        
+
         // Atualiza o token com o resultado da chamada de scanner,
         // que ja atualiza pos para o primeiro caracter da proxima palavra
         token = scanner(palavra, pos);
-        
+
         while (token == _COMENTARIO_) {
             // Remove os espaços da palavra para que o lookahead seja o próximo caracter
             while(palavra[*pos] == ' ')  {
@@ -296,7 +401,7 @@ int match(char c, char palavra[], int *pos) {
 
             // Atualiza o lookahead com o proximo caracter
             lookahead = palavra[*pos];
-            
+
             // Atualiza o token com o resultado da chamada de scanner,
             // que ja atualiza pos para o primeiro caracter da proxima palavra
             token = scanner(palavra, pos);
@@ -310,7 +415,7 @@ int match(char c, char palavra[], int *pos) {
             return 0;
         }
         return 1;
-        
+
     }
     return 0;
 }
@@ -328,7 +433,7 @@ void erro(int *pos, char *palavra) {
         printf("DE SINTAXE ");
 
     printf("NA POSICAO #%d: %c\n\n", *pos, lookahead);
-    
+
     int i;
     for (i = 0; i < *pos; i++) {
         printf("%c", palavra[i]);
@@ -344,14 +449,14 @@ char *leArquivo(char *nomeArquivo) {
     char c;
     char *resultado = malloc(tam * sizeof(char));
     if (!resultado) return NULL;
-    
+
     while ((c = getc(arq)) != EOF) {
         if (cont == tam - 1) {
             tam *= 2;
             resultado = realloc(resultado, tam);
             if (!resultado) return NULL;
         }
-        
+
         if (c != '\n' && c != '\t') {
             resultado[cont] = c;
             cont++;
@@ -359,7 +464,7 @@ char *leArquivo(char *nomeArquivo) {
     }
     resultado[cont] = '\0';
     fclose(arq);
-    
+
     return resultado;
 }
 
@@ -402,7 +507,7 @@ int DecFuncoesRep(char palavra[], int *pos) {
         }
     } else if (lookahead == 'p') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -429,14 +534,14 @@ int DecVariaveisOpcional(char palavra[], int *pos) {
         lookahead == 'b') {
         if (ParteDeclaracoesDeVariaveis(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '_'                    ||
                (lookahead == 'i' && token == _IF_) ||
                lookahead == 'd'                    ||
                lookahead == 'p'                    ||
                lookahead == ';') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -462,7 +567,7 @@ int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
                lookahead == 'p'                    ||
                lookahead == ';') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -478,13 +583,13 @@ int DecVariaveis(char palavra[], int *pos) {
             ListaDeIdentificadores(palavra, pos) &&
             match(';', palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'b') {
         if (match('b', palavra, pos)             &&
             ListaDeIdentificadores(palavra, pos) &&
             match(';', palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -510,17 +615,17 @@ int ListaIdRep(char palavra[], int *pos) {
             Identificador(palavra, pos)) {
             if (lookahead == ',')
                 return ListaIdRep(palavra, pos);
-            
+
             return 1;
         }
-        
+
     } else if (lookahead == '_'                    ||
                (lookahead == 'i' && token == _IF_) ||
                lookahead == 'd'                    ||
                lookahead == 'p'                    ||
                lookahead == ';') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -539,7 +644,7 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
         }
     } else if (lookahead == 'p') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -559,7 +664,7 @@ int DeclaraFuncao(char palavra[], int *pos) {
             match(')', palavra, pos)              &&
             Bloco(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -569,10 +674,10 @@ int ParametroFormalOpcional(char palavra[], int *pos) {
         lookahead == 'b') {
         if (ParametroFormal(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ')') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -587,12 +692,12 @@ int ParametroFormal(char palavra[], int *pos) {
         if (match('i', palavra, pos) &&
             Identificador(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'b') {
         if (match('b', palavra, pos) &&
             Identificador(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -612,7 +717,7 @@ int ComandoComposto(char palavra[], int *pos) {
             match(';', palavra, pos)          &&
             ComandoCompostoRep(palavra, pos))
             return 1;
-    
+
     }
     return 0;
 }
@@ -629,12 +734,12 @@ int ComandoCompostoRep(char palavra[], int *pos) {
                     lookahead == 'd'                    ||
                     lookahead == 'p')
                     return ComandoCompostoRep(palavra, pos);
-                
+
                 return 1;
             }
     } else if (lookahead == '}') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -653,21 +758,21 @@ int Comando(char palavra[], int *pos) {
         if (Identificador(palavra, pos) &&
             ComandoAuxiliar(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'i' && token == _IF_) {
         if (ComandoCondicional(palavra, pos))
             return 1;
     } else if (lookahead == 'd') {
         if (ComandoRepetitivo(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'p') {
         if (match('p', palavra, pos)    &&
             match('(', palavra, pos)    &&
             Identificador(palavra, pos) &&
             match(')', palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -676,11 +781,11 @@ int ComandoAuxiliar(char palavra[], int *pos) {
     if (lookahead == '=' && token == _SINAL_IGUAL_) {
         if (Atribuicao(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '(') {
         if (ChamadaDeProcedimento(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -710,7 +815,7 @@ int ChamadaDeProcedimento(char palavra[], int *pos) {
             ParametroOpcional(palavra, pos) &&
             match(')', palavra, pos))
             return 1;
-            
+
     }
     return 0;
 }
@@ -731,10 +836,10 @@ int ParametroOpcional(char palavra[], int *pos) {
         lookahead == 'f') {
         if (Parametro(palavra, pos))
             return 1;
-    
+
     } else if (lookahead == ')') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -750,7 +855,7 @@ int Parametro(char palavra[], int *pos) {
     if (lookahead == '_') {
         if (Identificador(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '0' ||
                lookahead == '1' ||
                lookahead == '2' ||
@@ -763,16 +868,16 @@ int Parametro(char palavra[], int *pos) {
                lookahead == '9') {
         if (Numero(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 't'||
                lookahead == 'f') {
         if (Bool(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ')') {
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -793,7 +898,7 @@ int ComandoCondicional(char palavra[], int *pos) {
             match('}', palavra, pos)        &&
             ElseOpcional(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -805,11 +910,11 @@ int ElseOpcional(char palavra[], int *pos) {
             ComandoComposto(palavra, pos)   &&
             match('}', palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ';' ||
                lookahead == '}') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -829,7 +934,7 @@ int ComandoRepetitivo(char palavra[], int *pos) {
             Expressao(palavra, pos)         &&
             match(')', palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -1262,7 +1367,7 @@ void freeLista() {
 }
 
 char * listaToString() {
-    char *resultado = calloc(l->tam + 1, sizeof(char));
+    char * resultado = calloc(l->tam + 1, sizeof(char));
     resultado[l->tam] = '\0'; // Indica fim da string
 
     int i;
