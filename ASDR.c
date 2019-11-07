@@ -250,6 +250,7 @@ TabelaSimbolos * initTabelaSimbolos(){
     return ts;
 }
 
+// Retorna 0 caso o simbolo já exista
 int insereVariavelTabelaSimbolos(char * nome, int tipo, TabelaSimbolos * ts){
     if(simboloJaExiste(nome, ts)){
         printf("Simbolo '%s' ja existente!\n", nome);
@@ -267,6 +268,7 @@ int insereVariavelTabelaSimbolos(char * nome, int tipo, TabelaSimbolos * ts){
     return 1; // Símbolo inserido na tabela
 }
 
+// Retorna 0 caso o simbolo já exista
 int insereFuncaoTabelaSimbolos(char * nome, char * nomeParametroFuncao, int tipoParametroFuncao, TabelaSimbolos * ts){
     if(simboloJaExiste(nome, ts)){
         printf("Simbolo '%s' ja existente!\n", nome);
@@ -300,10 +302,16 @@ int simboloJaExiste(char * simbolo, TabelaSimbolos * ts){
 }
 
 void printTabelaSimbolos(TabelaSimbolos * ts){
-    Simbolo * temp;
     puts("==============================================");
     puts("============= TABELA DE SIMBOLOS =============");
     puts("==============================================");
+
+    if(ts->init == 0){
+        puts("Tabela vazia.");
+        return;
+    }
+
+    Simbolo * temp;
     for(temp = ts->init; temp; temp = temp->prox){
         printf("Simbolo '%s':\n", temp->nome);
 
@@ -323,6 +331,11 @@ void printTabelaSimbolos(TabelaSimbolos * ts){
     }
 }
 
+// Remove todos os símbolos da tabela (troca de escopo)
+void removeSimbolos(TabelaSimbolos * ts){
+    ts->init = 0;
+}
+
 /// ============================== FUNCAO MAIN
 
 int main(){
@@ -333,6 +346,8 @@ int main(){
     insereVariavelTabelaSimbolos("_x", INT, ts);
     insereFuncaoTabelaSimbolos("_funcao", NULL, NULL, ts);
     insereFuncaoTabelaSimbolos("funcao2", "x", INT, ts);
+    printTabelaSimbolos(ts);
+    removeSimbolos(ts);
     printTabelaSimbolos(ts);
 /* MAIN ANTIGO
     char *palavra = leArquivo("entrada.txt");
