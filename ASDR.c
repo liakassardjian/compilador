@@ -241,12 +241,15 @@ typedef struct Simbolo{
 }Simbolo;
 
 typedef struct TabelaSimbolos{
+    TabelaSimbolos * prox = null;
+    char * escopo;
     Simbolo * init; // Lista ligada de simbolos
 }TabelaSimbolos;
 
-TabelaSimbolos * initTabelaSimbolos(){
+TabelaSimbolos * initTabelaSimbolos(char * nome){
     TabelaSimbolos * ts = (TabelaSimbolos *) calloc(1, sizeof(TabelaSimbolos));
     ts->init = 0;
+    escopo = nome;
     return ts;
 }
 
@@ -338,24 +341,29 @@ void removeSimbolos(TabelaSimbolos * ts){
 
 /// ============================== FUNCAO MAIN
 
+TabelaSimbolos* ts;
+
 int main(){
-    // Teste tabela de simbolos
-    TabelaSimbolos * ts = initTabelaSimbolos();
-    insereVariavelTabelaSimbolos("_x", INT, ts);
-    insereVariavelTabelaSimbolos("_z", BOOL, ts);
-    insereVariavelTabelaSimbolos("_x", INT, ts);
-    insereFuncaoTabelaSimbolos("_funcao", NULL, NULL, ts);
-    insereFuncaoTabelaSimbolos("funcao2", "x", INT, ts);
-    printTabelaSimbolos(ts);
-    removeSimbolos(ts);
-    printTabelaSimbolos(ts);
-/* MAIN ANTIGO
+//    // Teste tabela de simbolos
+//    TabelaSimbolos * ts = initTabelaSimbolos();
+//    insereVariavelTabelaSimbolos("_x", INT, ts);
+//    insereVariavelTabelaSimbolos("_z", BOOL, ts);
+//    insereVariavelTabelaSimbolos("_x", INT, ts);
+//    insereFuncaoTabelaSimbolos("_funcao", NULL, NULL, ts);
+//    insereFuncaoTabelaSimbolos("funcao2", "x", INT, ts);
+//    printTabelaSimbolos(ts);
+//    removeSimbolos(ts);
+//    printTabelaSimbolos(ts);
+
     char *palavra = leArquivo("entrada.txt");
 
     if (!palavra) {
         printf("ERRO NA LEITURA DO ARQUIVO\n");
         return 1;
     }
+
+    //Instanciacao da tabela de simbolos - Lista Ligada do tipo [Tabela de Simbolos]
+    ts = (TabelaSimbolos*) calloc (1, sizeof(TabelaSimbolos));
 
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
@@ -379,7 +387,7 @@ int main(){
         erroLexico = 1;
         erro(&pos, palavra);
     }
-*/
+
     return 0;
 }
 
