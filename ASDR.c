@@ -5,7 +5,7 @@
  Lia Kassardjian  31750370
  Vitor Barbosa    31780881
  TURMA 6G
- 
+
  IMPLEMENTACAO DO ANALISADOR SINTATICO DESCENDENTE RECURSIVO PARA A GRAMATICA:
  (A GRAMATICA FOI ADAPTADA DE MODO QUE O ANALISADOR POSSA FUNCIONAR CORRETAMENTE)
 
@@ -46,14 +46,14 @@
         ATUALIZADOS A FIM DE EVITAR PROBLEMAS COM O ANALISADOR SINTATICO. FOI
         INSERIDO UM NAO-TERMINAL AUXILIAR PARA DIRECIONAR PARA ATRIBUICAO OU
         CHAMADA DE PROCEDIMENTO.
- 
+
  10. Comando -> Identificador ComandoAuxiliar
      Comando -> ComandoCondicional
      Comando -> ComandoRepetitivo
      Comando -> print ( Identificador )
      ComandoAuxiliar -> Atribuicao
      ComandoAuxiliar -> ChamadaDeProcedimento
-        
+
  11. Atribuicao -> = Expressao
 
  12. ChamadaDeProcedimento -> ( ParametroOpcional )
@@ -98,7 +98,7 @@
      Fator -> Numero
      Fator -> Bool
      Fator -> ( ExpressaoSimples )
- 
+
  21. Variavel -> Identificador
 
  22. Bool -> true
@@ -225,17 +225,193 @@ TLista *l;
 void initScanner();
 int scanner(char *p, int *pos);
 
+/// ============================== TABELA DE SÍMBOLOS
+
+// Tipos de parâmetro para as funções
+#define NULO 0
+#define INT  1
+#define BOOL 2
+
+typedef struct Var Var;
+typedef struct Var{
+    Var * prox;
+    int tipo;
+    char * nome;
+}Var;
+
+typedef struct Escopo Escopo;
+typedef struct Escopo{ // Representa o escopo de determinada função
+    Escopo * prox;
+    char * nomeEscopo; // Recebe o nome da função
+    int tipoParametro; // Tipo do parâmetro formal da função
+    char * nomeParametro; // Nome do parâmetro de entrada
+    Var * var; // Lista de variáveis do escopo
+}Escopo;
+
+typedef struct TabelaSimbolo{
+    Escopo * esc;
+}TabelaSimbolo;
+
+TabelaSimbolo * initTabelaSimbolo(){
+    return (TabelaSimbolo *) calloc(1, sizeof(TabelaSimbolo));
+}
+
+void printTabelaSimbolo(TabelaSimbolo * ts){
+    puts("TABELA SIMBOLOS");
+    Escopo * e;
+    Var * v;
+    for(e = ts->esc; e; e = e->prox){
+        puts("===============================");
+        printf("Escopo de %s\n", e->nomeEscopo);
+        if(e->tipoParametro == INT) printf("Parametro de entrada: %s INT\n", e->nomeParametro);
+        else if(e->tipoParametro == BOOL) printf("Parametro de entrada: %s BOOL\n", e->nomeParametro);
+        else printf("Sem parametros de entrada.\n");
+
+        puts("Variaveis:");
+        for(v = e->var; v; v = v->prox){
+            printf("%s: ", v->nome);
+            if(v->tipo == INT) printf("INT\n");
+            else printf("BOOL\n");
+        }
+    }
+    puts("===============================");
+}
+
+// Cria um novo escopo na tabela de símbolos
+// Se retorno == 0, erro. Senão, sucesso.
+int criaEscopo(char * nomeEscopo, char * nomeParametroFormal, int tipoParametroFormal, TabelaSimbolo * ts){
+    // Verificação se já existe escopo com o mesmo nome
+    Escopo * temp;
+    for(temp = ts->esc; temp; temp = temp ->prox){
+        if(!strcmp(temp->nomeEscopo, nomeEscopo)){
+            printf("Escopo %s ja existe.\n", nomeEscopo);
+            return 0; // Já existe escopo com mesmo nome
+        }
+    }
+
+    // Criação de um novo escopo
+    Escopo * esc = (Escopo *) calloc(1, sizeof(Escopo));
+    esc->nomeEscopo = nomeEscopo;
+    esc->nomeParametro = nomeParametroFormal;
+    esc->tipoParametro = tipoParametroFormal;
+
+    // Inserção do escopo na lista de escopos
+    esc->prox = ts->esc;
+    ts->esc = esc;
+
+    return 1;
+}
+
+// Insere alguma variavel em determinado escopo.
+// Se retorno == 1, a variavel foi inserida com sucesso.
+int insereVariavel(char * nomeEscopo, char * nomeVariavel, int tipoVariavel, TabelaSimbolo * ts){
+    if((tipoVariavel != INT) && (tipoVariavel != BOOL)){
+        printf("Erro ao inserir variavel %s.\n", nomeVariavel);
+        printf("Tipo de variavel invalido. Deve ser INT ou BOOL.\n");
+        return 0;
+    }
+
+    // Procura do escopo
+    Escopo * esc;
+    for(esc = ts->esc; esc; esc = esc->prox){
+        if(!strcmp(esc->nomeEscopo, nomeEscopo)){
+            break;
+        }
+    }
+    // Se não achar o escopo passado como parâmeto:
+    if(!esc) {
+        printf("Escopo %s nao existe.\n", nomeEscopo);
+        return 0;
+    }
+
+    // Validacao se ha alguma variavel com mesmo nome
+    Var * v;
+    for(v = esc->var; v; v = v->prox){
+        if(!strcmp(v->nome, nomeVariavel)){
+            printf("Variavel %s ja existente no escopo %s.\n", nomeVariavel, nomeEscopo);
+            return 0;
+        }
+    }
+
+    // Criacao da variavel
+    v = (Var *) calloc(1, sizeof(Var));
+    v->nome = nomeVariavel;
+    v->tipo = tipoVariavel;
+
+    // Insercao da variavel no escopo
+    v->prox = esc->var;
+    esc->var = v;
+
+    return 1;
+}
+
+// Retorna as informações sobre determinado escopo.
+// Se retorno == 0, não há escopo.
+// Senão, retorna a struct Escopo.
+Escopo * getEscopo(char * nomeEscopo, TabelaSimbolo * ts){
+    Escopo * temp;
+    for(temp = ts->esc; temp; temp = temp->prox){
+        if(!strcmp(temp->nomeEscopo, nomeEscopo)){
+            return temp; // Escopo encontrado
+        }
+    }
+
+    return 0;
+}
+
+// Retorna as informações sobre determinada variável de certo escopo.
+// Se retorno == 0, a variável não existe no escopo.
+// Senão, retorna a struct Var.
+Var * getVar(char * nomeVariavel, char * nomeEscopo, TabelaSimbolo * ts){
+    Escopo * esc = getEscopo(nomeEscopo, ts);
+
+    // Se escopo nao for encontrado:
+    if(!esc){
+        return 0;
+    }
+
+    Var * v;
+    for(v = esc->var; v; v = v->prox){ // Busca da variavel no escopo
+        if(!strcmp(v->nome, nomeVariavel)) return v; // Variavel encontrada no escopo
+    }
+
+    printf("Variavel %s nao encontrada no escopo %s.\n", nomeVariavel, nomeEscopo);
+    return 0;
+}
 
 /// ============================== FUNCAO MAIN
 
 int main(){
+    // Criação da tabela de simbolos
+    TabelaSimbolo * ts = initTabelaSimbolo();
+
+    // Criação de escopos.
+    criaEscopo("_proc1", "_x", INT, ts);
+    criaEscopo("_proc2", "_y", BOOL, ts);
+    criaEscopo("_proc3", "_z", NULO, ts);
+
+    // Insercao de variaveis em escopos
+    insereVariavel("_proc1", "_var1", INT, ts);
+    insereVariavel("_proc2", "_var2", INT, ts);
+    insereVariavel("_proc3", "_var3", INT, ts);
+    insereVariavel("_proc3", "_var31", BOOL, ts);
+
+    // Get informações de uma variável
+    Var * v = getVar("_var1", "_proc1", ts);
+    printf("Variavel %s do escopo _proc1: %d\n", v->nome, v->tipo);
+
+    v = getVar("_var2", "_proc1", ts); // Tentativa de buscar uma variavel que nao existe no escopo
+
+    printTabelaSimbolo(ts);
+
+    /* MAIN ANTIGO
     char *palavra = leArquivo("entrada.txt");
-    
+
     if (!palavra) {
         printf("ERRO NA LEITURA DO ARQUIVO\n");
         return 1;
     }
-    
+
     // Contador que representa o caracter da string que deve ser analisado pela funcao scanner
     int pos = 0;
 
@@ -258,7 +434,7 @@ int main(){
         erroLexico = 1;
         erro(&pos, palavra);
     }
-
+    */
 
     return 0;
 }
@@ -283,11 +459,11 @@ int match(char c, char palavra[], int *pos) {
 
         // Atualiza o lookahead com o proximo caracter
         lookahead = palavra[*pos];
-        
+
         // Atualiza o token com o resultado da chamada de scanner,
         // que ja atualiza pos para o primeiro caracter da proxima palavra
         token = scanner(palavra, pos);
-        
+
         while (token == _COMENTARIO_) {
             // Remove os espaços da palavra para que o lookahead seja o próximo caracter
             while(palavra[*pos] == ' ')  {
@@ -296,7 +472,7 @@ int match(char c, char palavra[], int *pos) {
 
             // Atualiza o lookahead com o proximo caracter
             lookahead = palavra[*pos];
-            
+
             // Atualiza o token com o resultado da chamada de scanner,
             // que ja atualiza pos para o primeiro caracter da proxima palavra
             token = scanner(palavra, pos);
@@ -310,7 +486,7 @@ int match(char c, char palavra[], int *pos) {
             return 0;
         }
         return 1;
-        
+
     }
     return 0;
 }
@@ -328,7 +504,7 @@ void erro(int *pos, char *palavra) {
         printf("DE SINTAXE ");
 
     printf("NA POSICAO #%d: %c\n\n", *pos, lookahead);
-    
+
     int i;
     for (i = 0; i < *pos; i++) {
         printf("%c", palavra[i]);
@@ -344,14 +520,14 @@ char *leArquivo(char *nomeArquivo) {
     char c;
     char *resultado = malloc(tam * sizeof(char));
     if (!resultado) return NULL;
-    
+
     while ((c = getc(arq)) != EOF) {
         if (cont == tam - 1) {
             tam *= 2;
             resultado = realloc(resultado, tam);
             if (!resultado) return NULL;
         }
-        
+
         if (c != '\n' && c != '\t') {
             resultado[cont] = c;
             cont++;
@@ -359,7 +535,7 @@ char *leArquivo(char *nomeArquivo) {
     }
     resultado[cont] = '\0';
     fclose(arq);
-    
+
     return resultado;
 }
 
@@ -402,7 +578,7 @@ int DecFuncoesRep(char palavra[], int *pos) {
         }
     } else if (lookahead == 'p') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -429,14 +605,14 @@ int DecVariaveisOpcional(char palavra[], int *pos) {
         lookahead == 'b') {
         if (ParteDeclaracoesDeVariaveis(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '_'                    ||
                (lookahead == 'i' && token == _IF_) ||
                lookahead == 'd'                    ||
                lookahead == 'p'                    ||
                lookahead == ';') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -462,7 +638,7 @@ int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
                lookahead == 'p'                    ||
                lookahead == ';') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -478,13 +654,13 @@ int DecVariaveis(char palavra[], int *pos) {
             ListaDeIdentificadores(palavra, pos) &&
             match(';', palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'b') {
         if (match('b', palavra, pos)             &&
             ListaDeIdentificadores(palavra, pos) &&
             match(';', palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -510,17 +686,17 @@ int ListaIdRep(char palavra[], int *pos) {
             Identificador(palavra, pos)) {
             if (lookahead == ',')
                 return ListaIdRep(palavra, pos);
-            
+
             return 1;
         }
-        
+
     } else if (lookahead == '_'                    ||
                (lookahead == 'i' && token == _IF_) ||
                lookahead == 'd'                    ||
                lookahead == 'p'                    ||
                lookahead == ';') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -539,7 +715,7 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
         }
     } else if (lookahead == 'p') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -559,7 +735,7 @@ int DeclaraFuncao(char palavra[], int *pos) {
             match(')', palavra, pos)              &&
             Bloco(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -569,10 +745,10 @@ int ParametroFormalOpcional(char palavra[], int *pos) {
         lookahead == 'b') {
         if (ParametroFormal(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ')') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -587,12 +763,12 @@ int ParametroFormal(char palavra[], int *pos) {
         if (match('i', palavra, pos) &&
             Identificador(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'b') {
         if (match('b', palavra, pos) &&
             Identificador(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -612,7 +788,7 @@ int ComandoComposto(char palavra[], int *pos) {
             match(';', palavra, pos)          &&
             ComandoCompostoRep(palavra, pos))
             return 1;
-    
+
     }
     return 0;
 }
@@ -629,12 +805,12 @@ int ComandoCompostoRep(char palavra[], int *pos) {
                     lookahead == 'd'                    ||
                     lookahead == 'p')
                     return ComandoCompostoRep(palavra, pos);
-                
+
                 return 1;
             }
     } else if (lookahead == '}') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -653,21 +829,21 @@ int Comando(char palavra[], int *pos) {
         if (Identificador(palavra, pos) &&
             ComandoAuxiliar(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'i' && token == _IF_) {
         if (ComandoCondicional(palavra, pos))
             return 1;
     } else if (lookahead == 'd') {
         if (ComandoRepetitivo(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 'p') {
         if (match('p', palavra, pos)    &&
             match('(', palavra, pos)    &&
             Identificador(palavra, pos) &&
             match(')', palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -676,11 +852,11 @@ int ComandoAuxiliar(char palavra[], int *pos) {
     if (lookahead == '=' && token == _SINAL_IGUAL_) {
         if (Atribuicao(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '(') {
         if (ChamadaDeProcedimento(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -710,7 +886,7 @@ int ChamadaDeProcedimento(char palavra[], int *pos) {
             ParametroOpcional(palavra, pos) &&
             match(')', palavra, pos))
             return 1;
-            
+
     }
     return 0;
 }
@@ -731,10 +907,10 @@ int ParametroOpcional(char palavra[], int *pos) {
         lookahead == 'f') {
         if (Parametro(palavra, pos))
             return 1;
-    
+
     } else if (lookahead == ')') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -750,7 +926,7 @@ int Parametro(char palavra[], int *pos) {
     if (lookahead == '_') {
         if (Identificador(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == '0' ||
                lookahead == '1' ||
                lookahead == '2' ||
@@ -763,16 +939,16 @@ int Parametro(char palavra[], int *pos) {
                lookahead == '9') {
         if (Numero(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == 't'||
                lookahead == 'f') {
         if (Bool(palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ')') {
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -793,7 +969,7 @@ int ComandoCondicional(char palavra[], int *pos) {
             match('}', palavra, pos)        &&
             ElseOpcional(palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
@@ -805,11 +981,11 @@ int ElseOpcional(char palavra[], int *pos) {
             ComandoComposto(palavra, pos)   &&
             match('}', palavra, pos))
             return 1;
-        
+
     } else if (lookahead == ';' ||
                lookahead == '}') {
         return 1;
-        
+
     }
     return 0;
 }
@@ -829,7 +1005,7 @@ int ComandoRepetitivo(char palavra[], int *pos) {
             Expressao(palavra, pos)         &&
             match(')', palavra, pos))
             return 1;
-        
+
     }
     return 0;
 }
