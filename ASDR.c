@@ -159,8 +159,6 @@ int Bloco(char palavra[], int *pos);
 int DecVariaveisOpcional(char palavra[], int *pos);
 int ParteDeclaracoesDeVariaveis(char palavra[], int *pos);
 int DecVariaveis(char palavra[], int *pos);
-int ListaDeIdentificadores(char palavra[], int *pos);
-int ListaIdRep(char palavra[], int *pos);
 int DeclaracoesFuncoes(char palavra[], int *pos);
 int DeclaraFuncao(char palavra[], int *pos);
 int ParametroFormalOpcional(char palavra[], int *pos);
@@ -189,8 +187,15 @@ int Fator(char palavra[], int *pos);
 int Variavel(char palavra[], int *pos);
 int Bool(char palavra[], int *pos);
 int Numero(char palavra[], int *pos);
-int Identificador(char palavra[], int *pos);
 
+// Tipos de identificadores
+#define TIPOFUNCAO 0
+#define TIPOINT    1
+#define TIPOBOOL   2
+#define GETTIPO    3
+int Identificador(char palavra[], int *pos, int tipo);
+int ListaDeIdentificadores(char palavra[], int *pos, int tipo);
+int ListaIdRep(char palavra[], int *pos, int tipo);
 
 /// ============================== DECLARACAO DOS METODOS E VARIAVEIS RELATIVOS AO FUNCIONAMENTO DO ASDR
 
@@ -379,9 +384,13 @@ Var * getVar(char * nomeVariavel, char * nomeEscopo, TabelaSimbolo * ts){
     return 0;
 }
 
+TabelaSimbolo * ts;
+char * escopo;
+
 /// ============================== FUNCAO MAIN
 
 int main(){
+    /*
     // Criação da tabela de simbolos
     TabelaSimbolo * ts = initTabelaSimbolo();
 
@@ -403,8 +412,7 @@ int main(){
     v = getVar("_var2", "_proc1", ts); // Tentativa de buscar uma variavel que nao existe no escopo
 
     printTabelaSimbolo(ts);
-
-    /* MAIN ANTIGO
+    */
     char *palavra = leArquivo("entrada.txt");
 
     if (!palavra) {
@@ -417,6 +425,10 @@ int main(){
 
     // Inicializacao do scanner
     initScanner();
+
+    // Inicialização da tabela de símbolos
+    ts = initTabelaSimbolo();
+    escopo = "program";
 
     // Inicializa lookahead com o primeiro caracter
     lookahead = palavra[pos];
@@ -434,7 +446,8 @@ int main(){
         erroLexico = 1;
         erro(&pos, palavra);
     }
-    */
+
+    printTabelaSimbolo(ts);
 
     return 0;
 }
@@ -551,17 +564,17 @@ int Programa(char palavra[], int *pos) {
     // O primeiro "first" possivel para Programa eh v,
     // entao a verificacao do lookahead comeca por essa letra
     if (lookahead == 'v') {
-        if (DecFuncoesRep(palavra, pos) &&
-            match('p', palavra, pos)    &&
-            Identificador(palavra, pos) &&
+        if (DecFuncoesRep(palavra, pos)             &&
+            match('p', palavra, pos)                &&
+            Identificador(palavra, pos, TIPOFUNCAO) &&
             Bloco(palavra, pos))
             return 1;
 
     // A segunda possibilidade de "first" para Programa eh p,
     // entao verifica-se o lookahead para essa letra
     } else if (lookahead == 'p') {
-        if (match('p', palavra, pos)    &&
-            Identificador(palavra, pos) &&
+        if (match('p', palavra, pos)                &&
+            Identificador(palavra, pos, TIPOFUNCAO) &&
             Bloco(palavra, pos))
             return 1;
 
@@ -650,14 +663,14 @@ int ParteDeclaracoesDeVariaveis(char palavra[], int *pos) {
 */
 int DecVariaveis(char palavra[], int *pos) {
     if (lookahead == 'i' && token == _INT_) {
-        if (match('i', palavra, pos)             &&
-            ListaDeIdentificadores(palavra, pos) &&
+        if (match('i', palavra, pos)                      &&
+            ListaDeIdentificadores(palavra, pos, TIPOINT) &&
             match(';', palavra, pos))
             return 1;
 
     } else if (lookahead == 'b') {
-        if (match('b', palavra, pos)             &&
-            ListaDeIdentificadores(palavra, pos) &&
+        if (match('b', palavra, pos)                       &&
+            ListaDeIdentificadores(palavra, pos, TIPOBOOL) &&
             match(';', palavra, pos))
             return 1;
 
@@ -671,21 +684,21 @@ int DecVariaveis(char palavra[], int *pos) {
     ListaIdRep -> , Identificador ListaIdRep
     ListaIdRep -> &
 */
-int ListaDeIdentificadores(char palavra[], int *pos) {
+int ListaDeIdentificadores(char palavra[], int *pos, int tipo) {
     if (lookahead == '_') {
-        if (Identificador(palavra, pos)     &&
-            ListaIdRep(palavra, pos))
+        if (Identificador(palavra, pos, tipo)     &&
+            ListaIdRep(palavra, pos, tipo))
             return 1;
     }
     return 0;
 }
 
-int ListaIdRep(char palavra[], int *pos) {
+int ListaIdRep(char palavra[], int *pos, int tipo) {
     if (lookahead == ',') {
         if (match(',', palavra, pos)    &&
-            Identificador(palavra, pos)) {
+            Identificador(palavra, pos, tipo)) {
             if (lookahead == ',')
-                return ListaIdRep(palavra, pos);
+                return ListaIdRep(palavra, pos, tipo);
 
             return 1;
         }
@@ -728,11 +741,11 @@ int DeclaracoesFuncoes(char palavra[], int *pos) {
 */
 int DeclaraFuncao(char palavra[], int *pos) {
     if (lookahead == 'v') {
-        if (match('v', palavra, pos)              &&
-            Identificador(palavra, pos)           &&
-            match('(', palavra, pos)              &&
-            ParametroFormalOpcional(palavra, pos) &&
-            match(')', palavra, pos)              &&
+        if (match('v', palavra, pos)                &&
+            Identificador(palavra, pos, TIPOFUNCAO) &&
+            match('(', palavra, pos)                &&
+            ParametroFormalOpcional(palavra, pos)   &&
+            match(')', palavra, pos)                &&
             Bloco(palavra, pos))
             return 1;
 
@@ -761,12 +774,12 @@ int ParametroFormalOpcional(char palavra[], int *pos) {
 int ParametroFormal(char palavra[], int *pos) {
     if (lookahead == 'i' && token == _INT_) {
         if (match('i', palavra, pos) &&
-            Identificador(palavra, pos))
+            Identificador(palavra, pos, TIPOINT))
             return 1;
 
     } else if (lookahead == 'b') {
         if (match('b', palavra, pos) &&
-            Identificador(palavra, pos))
+            Identificador(palavra, pos, TIPOBOOL))
             return 1;
 
     }
@@ -826,7 +839,7 @@ int ComandoCompostoRep(char palavra[], int *pos) {
 */
 int Comando(char palavra[], int *pos) {
     if (lookahead == '_') {
-        if (Identificador(palavra, pos) &&
+        if (Identificador(palavra, pos, GETTIPO) &&
             ComandoAuxiliar(palavra, pos))
             return 1;
 
@@ -838,12 +851,11 @@ int Comando(char palavra[], int *pos) {
             return 1;
 
     } else if (lookahead == 'p') {
-        if (match('p', palavra, pos)    &&
-            match('(', palavra, pos)    &&
-            Identificador(palavra, pos) &&
+        if (match('p', palavra, pos)             &&
+            match('(', palavra, pos)             &&
+            Identificador(palavra, pos, GETTIPO) &&
             match(')', palavra, pos))
             return 1;
-
     }
     return 0;
 }
@@ -924,7 +936,7 @@ int ParametroOpcional(char palavra[], int *pos) {
 */
 int Parametro(char palavra[], int *pos) {
     if (lookahead == '_') {
-        if (Identificador(palavra, pos))
+        if (Identificador(palavra, pos, GETTIPO))
             return 1;
 
     } else if (lookahead == '0' ||
@@ -1293,7 +1305,7 @@ int Fator(char palavra[], int *pos) {
 */
 int Variavel(char palavra[], int *pos) {
     if (lookahead == '_') {
-        if (Identificador(palavra,pos))
+        if (Identificador(palavra,pos, GETTIPO))
             return 1;
     }
     return 0;
@@ -1378,7 +1390,22 @@ int Numero(char palavra[], int *pos) {
 /*
  24. Identificador -> id
 */
-int Identificador(char palavra[], int *pos) {
+int Identificador(char palavra[], int *pos, int tipo) {
+    printf("Identificador: %s\n", listaToString(l));
+    char * nomeVar = listaToString(l);
+
+    // TODO
+    // Insere na tabela de símbolos se for != de GETTIPO
+    if(tipo == TIPOINT){
+        insereVariavel(escopo, nomeVar, INT, ts);
+    }
+    else if(tipo == TIPOBOOL){
+        insereVariavel(escopo, nomeVar, BOOL, ts);
+    }
+/*    else if(tipo = TIPOFUNCAO){
+        criaEscopo(escopo, )
+    }
+*/
     if (lookahead == '_') {
         if (match('_', palavra, pos))
             return 1;
