@@ -189,10 +189,12 @@ int Bool(char palavra[], int *pos);
 int Numero(char palavra[], int *pos);
 
 // Tipos de identificadores
-#define TIPOFUNCAO 0
-#define TIPOINT    1
-#define TIPOBOOL   2
-#define GETTIPO    3
+#define TIPOFUNCAO    0
+#define TIPOINT       1
+#define TIPOBOOL      2
+#define GETTIPO       3
+#define PARFORMALINT  4
+#define PARFORMALBOOL 5
 int Identificador(char palavra[], int *pos, int tipo);
 int ListaDeIdentificadores(char palavra[], int *pos, int tipo);
 int ListaIdRep(char palavra[], int *pos, int tipo);
@@ -284,10 +286,10 @@ void printTabelaSimbolo(TabelaSimbolo * ts){
 
 // Cria um novo escopo na tabela de símbolos
 // Se retorno == 0, erro. Senão, sucesso.
-int criaEscopo(char * nomeEscopo, char * nomeParametroFormal, int tipoParametroFormal, TabelaSimbolo * ts){
+int criaEscopo(char * nomeEscopo, TabelaSimbolo * ts){
     // Verificação se já existe escopo com o mesmo nome
     Escopo * temp;
-    for(temp = ts->esc; temp; temp = temp ->prox){
+    for(temp = ts->esc; temp; temp = temp->prox){
         if(!strcmp(temp->nomeEscopo, nomeEscopo)){
             printf("Escopo %s ja existe.\n", nomeEscopo);
             return 0; // Já existe escopo com mesmo nome
@@ -297,13 +299,32 @@ int criaEscopo(char * nomeEscopo, char * nomeParametroFormal, int tipoParametroF
     // Criação de um novo escopo
     Escopo * esc = (Escopo *) calloc(1, sizeof(Escopo));
     esc->nomeEscopo = nomeEscopo;
-    esc->nomeParametro = nomeParametroFormal;
-    esc->tipoParametro = tipoParametroFormal;
 
     // Inserção do escopo na lista de escopos
     esc->prox = ts->esc;
     ts->esc = esc;
 
+    return 1;
+}
+
+// Retorna 0 se der erro.
+// Retorna 1 se OK.
+void insereParametroFormal(char * nomeEscopo, char * nomeParametroFormal, int tipoParametroFormal, TabelaSimbolo * ts){
+    // Verificação se já existe escopo com o mesmo nome
+    Escopo * temp;
+    for(temp = ts->esc; temp; temp = temp->prox){
+        if(!strcmp(temp->nomeEscopo, nomeEscopo)){
+            break;
+        }
+    }
+
+    if(!temp){
+        printf("Escopo nao encontrado para adicionar o parametro formal.\n");
+        return 0;
+    }
+
+    temp->nomeParametro = nomeParametroFormal;
+    temp->tipoParametro = tipoParametroFormal;
     return 1;
 }
 
@@ -330,6 +351,13 @@ int insereVariavel(char * nomeEscopo, char * nomeVariavel, int tipoVariavel, Tab
     }
 
     // Validacao se ha alguma variavel com mesmo nome
+    if(esc->nomeParametro){
+        if(!strcmp(esc->nomeParametro, nomeVariavel)){
+            printf("Variavel %s ja existente no escopo %s como variavel de entrada.", nomeVariavel, nomeEscopo);
+            return 0;
+        }
+    }
+
     Var * v;
     for(v = esc->var; v; v = v->prox){
         if(!strcmp(v->nome, nomeVariavel)){
@@ -774,12 +802,12 @@ int ParametroFormalOpcional(char palavra[], int *pos) {
 int ParametroFormal(char palavra[], int *pos) {
     if (lookahead == 'i' && token == _INT_) {
         if (match('i', palavra, pos) &&
-            Identificador(palavra, pos, TIPOINT))
+            Identificador(palavra, pos, PARFORMALINT))
             return 1;
 
     } else if (lookahead == 'b') {
         if (match('b', palavra, pos) &&
-            Identificador(palavra, pos, TIPOBOOL))
+            Identificador(palavra, pos, PARFORMALBOOL))
             return 1;
 
     }
@@ -1386,33 +1414,55 @@ int Numero(char palavra[], int *pos) {
     return 0;
 }
 
-
 /*
  24. Identificador -> id
 */
 int Identificador(char palavra[], int *pos, int tipo) {
     printf("Identificador: %s\n", listaToString(l));
-    char * nomeVar = listaToString(l);
+    char * nomeIdentificador = listaToString(l);
 
     // TODO
     // Insere na tabela de símbolos se for != de GETTIPO
     if(tipo == TIPOINT){
-        insereVariavel(escopo, nomeVar, INT, ts);
+        printf("Variavel inteira\n");
+        insereVariavel(escopo, nomeIdentificador, INT, ts);
+        printTabelaSimbolo(ts);
+        puts("============================================");
     }
     else if(tipo == TIPOBOOL){
-        insereVariavel(escopo, nomeVar, BOOL, ts);
+        printf("Variavel booleana\n");
+        insereVariavel(escopo, nomeIdentificador, BOOL, ts);
+        printTabelaSimbolo(ts);
+        puts("============================================");
     }
-/*    else if(tipo = TIPOFUNCAO){
-        criaEscopo(escopo, )
+    else if(tipo == TIPOFUNCAO){
+        printf("Funcao\n");
+        escopo = nomeIdentificador;
+        criaEscopo(nomeIdentificador, ts);
+        printTabelaSimbolo(ts);
+        puts("============================================");
     }
-*/
+    else if(tipo == PARFORMALINT){
+        printf("Parametro formal INT de Funcao\n");
+        char * nomeParametroFormal = nomeIdentificador;
+        insereParametroFormal(escopo, nomeParametroFormal, INT, ts);
+        printTabelaSimbolo(ts);
+        puts("============================================");
+    }
+    else if(tipo == PARFORMALBOOL){
+        printf("Parametro formal BOOL de Funcao\n");
+        char * nomeParametroFormal = nomeIdentificador;
+        insereParametroFormal(escopo, nomeParametroFormal, BOOL, ts);
+        printTabelaSimbolo(ts);
+        puts("============================================");
+    }
+
     if (lookahead == '_') {
         if (match('_', palavra, pos))
             return 1;
     }
     return 0;
 }
-
 
 /// ============================== IMPLEMENTACAO DA TAD LISTA LIGADA USADA PELO ANALISADOR LEXICO
 
