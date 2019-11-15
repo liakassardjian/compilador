@@ -1,4 +1,3 @@
-
 /*
  Caio Augusto     31782809
  Leandro Soares   31715125
@@ -264,7 +263,9 @@ TabelaSimbolo * initTabelaSimbolo(){
 }
 
 void printTabelaSimbolo(TabelaSimbolo * ts){
-    puts("TABELA SIMBOLOS");
+    puts("=======================================");
+    puts("=========== TABELA SIMBOLOS ===========");
+    puts("=======================================");
     Escopo * e;
     Var * v;
     for(e = ts->esc; e; e = e->prox){
@@ -281,7 +282,7 @@ void printTabelaSimbolo(TabelaSimbolo * ts){
             else printf("BOOL\n");
         }
     }
-    puts("===============================");
+    puts("=======================================");
 }
 
 // Cria um novo escopo na tabela de símbolos
@@ -418,29 +419,6 @@ char * escopo;
 /// ============================== FUNCAO MAIN
 
 int main(){
-    /*
-    // Criação da tabela de simbolos
-    TabelaSimbolo * ts = initTabelaSimbolo();
-
-    // Criação de escopos.
-    criaEscopo("_proc1", "_x", INT, ts);
-    criaEscopo("_proc2", "_y", BOOL, ts);
-    criaEscopo("_proc3", "_z", NULO, ts);
-
-    // Insercao de variaveis em escopos
-    insereVariavel("_proc1", "_var1", INT, ts);
-    insereVariavel("_proc2", "_var2", INT, ts);
-    insereVariavel("_proc3", "_var3", INT, ts);
-    insereVariavel("_proc3", "_var31", BOOL, ts);
-
-    // Get informações de uma variável
-    Var * v = getVar("_var1", "_proc1", ts);
-    printf("Variavel %s do escopo _proc1: %d\n", v->nome, v->tipo);
-
-    v = getVar("_var2", "_proc1", ts); // Tentativa de buscar uma variavel que nao existe no escopo
-
-    printTabelaSimbolo(ts);
-    */
     char *palavra = leArquivo("entrada.txt");
 
     if (!palavra) {
@@ -456,7 +434,6 @@ int main(){
 
     // Inicialização da tabela de símbolos
     ts = initTabelaSimbolo();
-    escopo = "program";
 
     // Inicializa lookahead com o primeiro caracter
     lookahead = palavra[pos];
@@ -474,8 +451,6 @@ int main(){
         erroLexico = 1;
         erro(&pos, palavra);
     }
-
-    printTabelaSimbolo(ts);
 
     return 0;
 }
@@ -882,8 +857,10 @@ int Comando(char palavra[], int *pos) {
         if (match('p', palavra, pos)             &&
             match('(', palavra, pos)             &&
             Identificador(palavra, pos, GETTIPO) &&
-            match(')', palavra, pos))
-            return 1;
+            match(')', palavra, pos)){
+                printTabelaSimbolo(ts);
+                return 1;
+            }
     }
     return 0;
 }
@@ -1418,43 +1395,31 @@ int Numero(char palavra[], int *pos) {
  24. Identificador -> id
 */
 int Identificador(char palavra[], int *pos, int tipo) {
-    printf("Identificador: %s\n", listaToString(l));
     char * nomeIdentificador = listaToString(l);
 
-    // TODO
     // Insere na tabela de símbolos se for != de GETTIPO
     if(tipo == TIPOINT){
-        printf("Variavel inteira\n");
-        insereVariavel(escopo, nomeIdentificador, INT, ts);
-        printTabelaSimbolo(ts);
-        puts("============================================");
+        // Caso a variável ja exista no escopo
+        if(!insereVariavel(escopo, nomeIdentificador, INT, ts)){
+            return 0;
+        };
     }
     else if(tipo == TIPOBOOL){
-        printf("Variavel booleana\n");
-        insereVariavel(escopo, nomeIdentificador, BOOL, ts);
-        printTabelaSimbolo(ts);
-        puts("============================================");
+        if(!insereVariavel(escopo, nomeIdentificador, BOOL, ts)){
+            return 0;
+        };
     }
     else if(tipo == TIPOFUNCAO){
-        printf("Funcao\n");
         escopo = nomeIdentificador;
         criaEscopo(nomeIdentificador, ts);
-        printTabelaSimbolo(ts);
-        puts("============================================");
     }
     else if(tipo == PARFORMALINT){
-        printf("Parametro formal INT de Funcao\n");
         char * nomeParametroFormal = nomeIdentificador;
         insereParametroFormal(escopo, nomeParametroFormal, INT, ts);
-        printTabelaSimbolo(ts);
-        puts("============================================");
     }
     else if(tipo == PARFORMALBOOL){
-        printf("Parametro formal BOOL de Funcao\n");
         char * nomeParametroFormal = nomeIdentificador;
         insereParametroFormal(escopo, nomeParametroFormal, BOOL, ts);
-        printTabelaSimbolo(ts);
-        puts("============================================");
     }
 
     if (lookahead == '_') {
