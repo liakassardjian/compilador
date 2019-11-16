@@ -427,14 +427,52 @@ typedef struct Token Token;
 struct Token{
     Token * prox;
     char * nome;
-    int token; // Recebe o codigo do Token
+    int codToken; // Recebe o codigo do Token
 };
 
 typedef struct ListaToken ListaToken;
 struct ListaToken{
-    Token * t; // Primeiro token da lista
+    Token * primeiroToken; // Primeiro token da lista
+    Token * ultimoToken;   // Ultimo token da lista
     int tamanho;
 };
+
+ListaToken * lt;
+
+ListaToken * initListaToken(){
+    return (ListaToken *) calloc(1, sizeof(ListaToken));
+}
+
+void insereToken(char * nomeToken, int codToken){
+    Token * t = (Token *) calloc(1, sizeof(Token));
+    t->nome = nomeToken;
+    t->codToken = codToken;
+
+    // Aumenta o tamanho da lista
+    lt->tamanho++;
+
+    // Caso não haja nenhum token na lista
+    if(!lt->primeiroToken){
+        lt->primeiroToken = t;
+        lt->ultimoToken = t;
+    }
+    else{
+        lt->ultimoToken->prox = t;
+        lt->ultimoToken = t;
+    }
+}
+
+void imprimeListaTokens(){
+    puts("Lista de tokens: ");
+    puts("================================");
+
+    Token * temp;
+    for(temp = lt->primeiroToken; temp; temp = temp->prox){
+        printf("Token: %s\n", temp->nome);
+        printf("Codigo: %d\n", temp->codToken);
+        puts("================================");
+    }
+}
 
 // TODO
 // Implementar funções para adicionar os tokens nessa lista
@@ -445,7 +483,6 @@ struct ListaToken{
 
 int main(){
     char *palavra = leArquivo("entrada.txt");
-    printf("Palavra: %s\n", palavra);
 
     if (!palavra) {
         printf("ERRO NA LEITURA DO ARQUIVO\n");
@@ -460,6 +497,9 @@ int main(){
 
     // Inicialização da tabela de símbolos
     ts = initTabelaSimbolo();
+
+    // Inicialização da lista de tokens para analise semantica
+    lt = initListaToken();
 
     // Inicializa lookahead com o primeiro caracter
     lookahead = palavra[pos];
