@@ -510,15 +510,26 @@ int isEquals(char * a, char * b){
     return 0;
 }
 
+void printErroExpressao(char * textoErro, int i, Token ** tokens){
+    // Procura o inicio do comando
+    for(; tokens[i]->codToken != _SINAL_IGUAL_ &&
+          tokens[i]->codToken != _WHILE_       &&
+          tokens[i]->codToken != _IF_; i--);
+
+    if(tokens[i]->codToken == _SINAL_IGUAL_) i--;
+
+    printf("Erro na expressao");
+    for(; tokens[i]->codToken != _PONTO_VIRGULA_ &&
+          tokens[i]->codToken != _ABRE_CHAVES_; i++){
+        printf(" %s", tokens[i]->nome);
+    }
+
+    printf("\nMotivo: %s\n", textoErro);
+}
+
 // Retorna _INT_ ou _BOOL_ dependendo do tipo da expressão
 int validaExpressao(int i, Token ** tokens){
-    // Recebe o primeiro lexema da expressão
-
-    puts("Expressao: ");
-    int j = i - 1;
-    for(; tokens[j]->codToken != _PONTO_VIRGULA_; j++){
-        printf("%s ", tokens[j]->nome);
-    }
+    // Recebe o primeiro lexema da expressão na posição tokens[i]
 
     // Identifica o tipo do primeiro termo. Todos os seguintes devem ser iguais
     int tipo;
@@ -526,10 +537,8 @@ int validaExpressao(int i, Token ** tokens){
           tokens[i]->codToken != _NUM_           &&
           tokens[i]->codToken != _TRUE_          &&
           tokens[i]->codToken != _FALSE_; i++){
-        printf("Buscando... %s | ", tokens[i]->nome);
     }
 
-    printf("Achado primeiro elemento: %s\n", tokens[i]->nome);
     if(tokens[i]->codToken == _IDENTIFICADOR_){ // Pegaremos o tipo da variavel
         tipo = getVar(tokens[i]->nome, escopo, ts)->tipo;
     }
@@ -537,14 +546,13 @@ int validaExpressao(int i, Token ** tokens){
     else if(tokens[i]->codToken == _NUM_) tipo = TIPOINT;
     else tipo = TIPOBOOL;
 
-    printf("Tipo retornado pela funcao: %s\n", tipo==TIPOINT?"Int":"Bool");
-
     i++;
-    for(; tokens[i]->codToken != _PONTO_VIRGULA_; i++){
-        printf("Elemento: %s, tipo %d\n", tokens[i]->nome, tokens[i]->codToken);
+    for(; tokens[i]->codToken != _PONTO_VIRGULA_ &&
+          tokens[i]->codToken != _ABRE_CHAVES_; i++){
         // Validação de expressões inteiras
         if(tipo == TIPOINT){
             if(tokens[i]->codToken == _TRUE_ || tokens[i]->codToken == _FALSE_){
+                printErroExpressao("Operacao invalida.", i, tokens);
                 return 0;
             }
 
@@ -552,12 +560,12 @@ int validaExpressao(int i, Token ** tokens){
             if(tokens[i]->codToken == _IDENTIFICADOR_){
                 // Verifica se o identificador não é uma função
                 if(getEscopo(tokens[i]->nome, ts)){
-                    printf("Erro. %s e uma funcao.\n", tokens[i]->nome);
+                    printErroExpressao("Uma das variaveis e uma funcao.", i, tokens);
                     return 0;
                 }
 
                 if(getVar(tokens[i]->nome, escopo, ts)->tipo != TIPOINT){
-                    printf("Erro. %s e do tipo Bool.\n", tokens[i]->nome);
+                    printErroExpressao("Uma das variaveis e do tipo bool.", i, tokens);
                     return 0;
                 }
             }
@@ -573,6 +581,7 @@ int validaExpressao(int i, Token ** tokens){
                tokens[i]->codToken == _MENOR_               ||
                tokens[i]->codToken == TIPOINT
                ){
+                printErroExpressao("Operacao invalida.", i, tokens);
                 return 0;
             }
 
@@ -580,12 +589,12 @@ int validaExpressao(int i, Token ** tokens){
             if(tokens[i]->codToken == _IDENTIFICADOR_){
                 // Verifica se o identificador não é uma função
                 if(getEscopo(tokens[i]->nome, ts)){
-                    printf("Erro. %s e uma funcao.\n", tokens[i]->nome);
+                    printErroExpressao("Uma das variaveis e uma funcao.", i, tokens);
                     return 0;
                 }
 
                 if(getVar(tokens[i]->nome, escopo, ts)->tipo != TIPOBOOL){
-                    printf("Erro. %s e do tipo Int.\n", tokens[i]->nome);
+                    printErroExpressao("Uma das variaveis e do tipo int.", i, tokens);
                     return 0;
                 }
             }
@@ -599,12 +608,13 @@ int validaAtribuicao(int i, Token ** tokens){
     char * nomeVar = tokens[i-1]->nome;
     int tipoVar = getVar(nomeVar, escopo, ts)->tipo;
 
-    puts("==========================================");
-    printf("Tipo esperado: %s\n", tipoVar==TIPOINT?"Int":"Bool");
-    if(tipoVar != validaExpressao(i, tokens)){
-        printf("Erro! Divergencia de tipos.");
-        // TODO
-        // Fazer print da expressão errada
+    int resultado = validaExpressao(i, tokens);
+
+    if(!resultado){
+        return 0;
+    }
+    if(tipoVar != resultado){
+        printErroExpressao("Divergencia de tipos.", i, tokens);
         return 0;
     }
 
@@ -632,7 +642,13 @@ int analiseSemantica(){
         }
 
         // Validação de expressões lógicas
-
+        if(tokens[i]->codToken == _IF_   ||
+           tokens[i]->codToken == _WHILE_){
+            if(!validaExpressao(i, tokens)){
+                puts("Print expressao com erro no while ou no if.");
+                return 0;
+            }
+        }
     }
 
     return 1;
@@ -667,15 +683,21 @@ int main(){
     token = scanner(palavra, &pos);
 
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
+    int analisaLexSinOK = Programa(palavra, &pos);
     if (token != 0) {
-        if (Programa(palavra, &pos) &&
-            analiseSemantica())
-            printf("SUCESSO NA ANALISE LEXICA E SINTATICA\n");
-        else
+        if (!analisaLexSinOK){
             erro(&pos, palavra);
+            return 1;
+        }
     } else {
         erroLexico = 1;
         erro(&pos, palavra);
+        return 1;
+    }
+
+    int analiseSemanticaOK = analiseSemantica();
+    if(analiseSemanticaOK){
+        puts("SUCESSO NA LEITURA");
     }
 
     return 0;
