@@ -360,7 +360,7 @@ int insereVariavel(char * nomeEscopo, char * nomeVariavel, int tipoVariavel, Tab
     // Validacao se ha alguma variavel com mesmo nome
     if(esc->nomeParametro){
         if(!strcmp(esc->nomeParametro, nomeVariavel)){
-            printf("Variavel %s ja existente no escopo %s como variavel de entrada.", nomeVariavel, nomeEscopo);
+            printf("Erro: Variavel %s ja existente no escopo %s como variavel de entrada.", nomeVariavel, nomeEscopo);
             return 0;
         }
     }
@@ -368,7 +368,7 @@ int insereVariavel(char * nomeEscopo, char * nomeVariavel, int tipoVariavel, Tab
     Var * v;
     for(v = esc->var; v; v = v->prox){
         if(!strcmp(v->nome, nomeVariavel)){
-            printf("Variavel %s ja existente no escopo %s.\n", nomeVariavel, nomeEscopo);
+            printf("Erro: Variavel %s ja existente no escopo %s.\n", nomeVariavel, nomeEscopo);
             return 0;
         }
     }
