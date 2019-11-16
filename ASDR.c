@@ -136,19 +136,18 @@
 #define _WHILE_               17  // while
 #define _ABRE_CHAVES_         18  // {
 #define _FECHA_CHAVES_        19  // }
-#define _PONTO_VIRGULA_       20 // ;
-#define _VIRGULA_             21 // ,
-#define _ABRE_PARENTESES_     22 // (
-#define _FECHA_PARENTESES_    23 // )
-#define _SINAL_MAIS_          24 // +
-#define _SINAL_IGUAL_         25 // =
-#define _IGUAL_IGUAL_         26 // ==
-#define _MAIOR_               27 // >
-#define _MAIOR_IGUAL_         28 // >=
-#define _SINAL_MENOS_         29 // -
-#define _SINAL_MULTIPLICACAO_ 30 // *
-#define _NUM_                 31 // 0123456789
-
+#define _PONTO_VIRGULA_       20  // ;
+#define _VIRGULA_             21  // ,
+#define _ABRE_PARENTESES_     22  // (
+#define _FECHA_PARENTESES_    23  // )
+#define _SINAL_MAIS_          24  // +
+#define _SINAL_IGUAL_         25  // =
+#define _IGUAL_IGUAL_         26  // ==
+#define _MAIOR_               27  // >
+#define _MAIOR_IGUAL_         28  // >=
+#define _SINAL_MENOS_         29  // -
+#define _SINAL_MULTIPLICACAO_ 30  // *
+#define _NUM_                 31  // 0123456789
 
 /// ============================== DECLARACAO DAS FUNCOES RECURSIVAS DOS SIMBOLOS NAO-TERMINAIS
 
@@ -423,10 +422,30 @@ Var * getVar(char * nomeVariavel, char * nomeEscopo, TabelaSimbolo * ts){
 TabelaSimbolo * ts;
 char * escopo;
 
+/// ============================== LISTA DE TOKENS PARA A ANÁLISE SEMÂNTICA
+typedef struct Token Token;
+struct Token{
+    Token * prox;
+    char * nome;
+    int token; // Recebe o codigo do Token
+};
+
+typedef struct ListaToken ListaToken;
+struct ListaToken{
+    Token * t; // Primeiro token da lista
+    int tamanho;
+};
+
+// TODO
+// Implementar funções para adicionar os tokens nessa lista
+// com nome e codigo do mesmo.
+
+
 /// ============================== FUNCAO MAIN
 
 int main(){
     char *palavra = leArquivo("entrada.txt");
+    printf("Palavra: %s\n", palavra);
 
     if (!palavra) {
         printf("ERRO NA LEITURA DO ARQUIVO\n");
@@ -1506,7 +1525,6 @@ void initScanner() {
 }
 
 int scanner(char *p, int *pos) {
-    printf("Elemento: %s\n", listaToString(l));
     resetLista(); // Remove todos os elementos da lista que guarda o nome do lexema
 
     char *palavra = &p[*pos];
@@ -1755,6 +1773,7 @@ int scanner(char *p, int *pos) {
         }
 
     q10:
+        printf("Elemento: %s\n", listaToString(l));
         return _MENOR_IGUAL_;
 
     q11:
@@ -1830,45 +1849,59 @@ int scanner(char *p, int *pos) {
         }
 
     q17:
+        printf("Elemento: %s\n", listaToString(l));
         return _DIFERENTE_;
 
     q18:
+        printf("Elemento: %s\n", listaToString(l));
         return _MAIOR_IGUAL_;
 
     q19:
+        printf("Elemento: %s\n", listaToString(l));
         return _MAIOR_;
 
     q20:
+        printf("Elemento: %s\n", listaToString(l));
         return _DIVISAO_;
 
     q21:
+        printf("Elemento: %s\n", listaToString(l));
         return _SINAL_MENOS_;
 
     q22:
+        printf("Elemento: %s\n", listaToString(l));
         return _SINAL_IGUAL_;
 
     q23:
+        printf("Elemento: %s\n", listaToString(l));
         return _SINAL_MAIS_;
 
     q24:
+        printf("Elemento: %s\n", listaToString(l));
         return _ABRE_PARENTESES_;
 
     q25:
+        printf("Elemento: %s\n", listaToString(l));
         return _FECHA_PARENTESES_;
 
     q26:
+        printf("Elemento: %s\n", listaToString(l));
         return _VIRGULA_;
 
     q27:
+        printf("Elemento: %s\n", listaToString(l));
         return _PONTO_VIRGULA_;
 
     q28:
+        printf("Elemento: %s\n", listaToString(l));
         return _FECHA_CHAVES_;
 
     q29:
+        printf("Elemento: %s\n", listaToString(l));
         return _ABRE_CHAVES_;
 
     q30:
+        printf("Elemento: %s\n", listaToString(l));
         return _MENOR_;
 
     q31:
@@ -1894,6 +1927,7 @@ int scanner(char *p, int *pos) {
         }
 
     q33:
+        printf("Elemento: %s\n", listaToString(l));
         return _IGUAL_IGUAL_;
 
     q34:
@@ -1948,6 +1982,7 @@ int scanner(char *p, int *pos) {
         }
 
     q37:
+        printf("Elemento: %s\n", listaToString(l));
         return _COMENTARIO_;
 
     q38:
@@ -1963,6 +1998,7 @@ int scanner(char *p, int *pos) {
         }
 
     q39:
+        printf("Elemento: %s\n", listaToString(l));
         return _SINAL_MULTIPLICACAO_;
 
     q40:
@@ -2018,6 +2054,7 @@ int scanner(char *p, int *pos) {
         }
 
     q42:
+        printf("Elemento: %s\n", listaToString(l));
         return _IDENTIFICADOR_;
 
     q43:
@@ -2056,6 +2093,7 @@ int scanner(char *p, int *pos) {
         }
 
     q46:
+        printf("Elemento: %s\n", listaToString(l));
         return _INT_;
 
     q47:
@@ -2101,6 +2139,7 @@ int scanner(char *p, int *pos) {
         }
 
     q51:
+        printf("Elemento: %s\n", listaToString(l));
         return _BOOL_;
 
     q52:
@@ -2179,6 +2218,7 @@ int scanner(char *p, int *pos) {
         }
 
     q59:
+        printf("Elemento: %s\n", listaToString(l));
         return _PROGRAM_;
 
     q60:
@@ -2224,6 +2264,7 @@ int scanner(char *p, int *pos) {
         }
 
     q64:
+        printf("Elemento: %s\n", listaToString(l));
         return _VOID_;
 
     q65:
@@ -2259,6 +2300,7 @@ int scanner(char *p, int *pos) {
         }
 
     q68:
+        printf("Elemento: %s\n", listaToString(l));
         return _PRINT_;
 
     q69:
@@ -2274,6 +2316,7 @@ int scanner(char *p, int *pos) {
         }
 
     q70:
+        printf("Elemento: %s\n", listaToString(l));
         return _IF_;
 
     q71:
@@ -2319,6 +2362,7 @@ int scanner(char *p, int *pos) {
         }
 
     q75:
+	    printf("Elemento: %s\n", listaToString(l));
         return _TRUE_;
 
     q76:
@@ -2374,6 +2418,7 @@ int scanner(char *p, int *pos) {
         }
 
     q81:
+        printf("Elemento: %s\n", listaToString(l));
         return _FALSE_;
 
     q82:
@@ -2399,6 +2444,7 @@ int scanner(char *p, int *pos) {
         }
 
     q84:
+        printf("Elemento: %s\n", listaToString(l));
         return _DO_;
 
     q85:
@@ -2444,6 +2490,7 @@ int scanner(char *p, int *pos) {
         }
 
     q89:
+        printf("Elemento: %s\n", listaToString(l));
         return _ELSE_;
 
     q90:
@@ -2499,9 +2546,11 @@ int scanner(char *p, int *pos) {
         }
 
     q95:
+        printf("Elemento: %s\n", listaToString(l));
         return _WHILE_;
 
     q96:
+        printf("Elemento: %s\n", listaToString(l));
         return _NUM_;
 
     q97:
