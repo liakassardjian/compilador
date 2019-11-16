@@ -338,13 +338,20 @@ int insereVariavel(char * nomeEscopo, char * nomeVariavel, int tipoVariavel, Tab
         return 0;
     }
 
-    // Procura do escopo
-    Escopo * esc;
-    for(esc = ts->esc; esc; esc = esc->prox){
-        if(!strcmp(esc->nomeEscopo, nomeEscopo)){
-            break;
+    // Procura do escopo e validação de nome de variável == nome de escopo
+    Escopo * esc = 0; // caso o escopo exista, ficará salvo nessa variável
+    Escopo * findEsc; // percorre todos os escopos para validacao
+    for(findEsc = ts->esc; findEsc; findEsc = findEsc->prox){
+        if(!strcmp(findEsc->nomeEscopo, nomeEscopo)){
+            esc = findEsc;
+        }
+
+        if(!strcmp(findEsc->nomeEscopo, nomeVariavel)){
+            printf("Erro ao inserir variavel %s. Ja existe um procedimento com mesmo nome.\n", nomeVariavel);
+            return 0;
         }
     }
+
     // Se não achar o escopo passado como parâmeto:
     if(!esc) {
         printf("Escopo %s nao existe.\n", nomeEscopo);
@@ -1499,7 +1506,8 @@ void initScanner() {
 }
 
 int scanner(char *p, int *pos) {
-    resetLista(); // Remove todos os elementos da lista
+    printf("Elemento: %s\n", listaToString(l));
+    resetLista(); // Remove todos os elementos da lista que guarda o nome do lexema
 
     char *palavra = &p[*pos];
 
@@ -1518,7 +1526,8 @@ int scanner(char *p, int *pos) {
 
     // Inicio Automato Finito Deterministico
     q0:
-        switch(*palavra) {
+    	insereElemento(*palavra);
+        switch(*palavra){
             case '<':
                 palavra++; (*pos)++;
                 goto q1;
@@ -1529,7 +1538,6 @@ int scanner(char *p, int *pos) {
                 palavra++; (*pos)++;
                 goto q3;
             case '_':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q40;
             case '{':
@@ -1563,43 +1571,33 @@ int scanner(char *p, int *pos) {
                 palavra++; (*pos)++;
                 goto q38;
             case '1':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '2':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '3':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '4':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '5':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '6':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '7':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '8':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '9':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '0':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case 'b':
@@ -1634,6 +1632,7 @@ int scanner(char *p, int *pos) {
         }
 
     q1:
+    	insereElemento(*palavra);
         switch(*palavra){
             case '=':
                 palavra++; (*pos)++;
@@ -1651,6 +1650,7 @@ int scanner(char *p, int *pos) {
         }
 
     q2:
+    	insereElemento(*palavra);
         switch(*palavra){
             case '=':
                 palavra++; (*pos)++;
@@ -1665,6 +1665,7 @@ int scanner(char *p, int *pos) {
         }
 
     q3:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1679,6 +1680,7 @@ int scanner(char *p, int *pos) {
         }
 
     q4:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1690,6 +1692,7 @@ int scanner(char *p, int *pos) {
         }
 
     q5:
+    	insereElemento(*palavra);
         switch(*palavra){
             case '=':
                 palavra++; (*pos)++;
@@ -1704,6 +1707,7 @@ int scanner(char *p, int *pos) {
         }
 
     q6:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1715,6 +1719,7 @@ int scanner(char *p, int *pos) {
         }
 
     q7:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1726,6 +1731,7 @@ int scanner(char *p, int *pos) {
         }
 
     q8:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1737,6 +1743,7 @@ int scanner(char *p, int *pos) {
         }
 
     q9:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1751,6 +1758,7 @@ int scanner(char *p, int *pos) {
         return _MENOR_IGUAL_;
 
     q11:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1762,6 +1770,7 @@ int scanner(char *p, int *pos) {
         }
 
     q12:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1773,6 +1782,7 @@ int scanner(char *p, int *pos) {
         }
 
     q13:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1784,6 +1794,7 @@ int scanner(char *p, int *pos) {
         }
 
     q14:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1795,6 +1806,7 @@ int scanner(char *p, int *pos) {
         }
 
     q15:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1806,6 +1818,7 @@ int scanner(char *p, int *pos) {
         }
 
     q16:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1869,6 +1882,7 @@ int scanner(char *p, int *pos) {
         }
 
     q32:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1883,6 +1897,7 @@ int scanner(char *p, int *pos) {
         return _IGUAL_IGUAL_;
 
     q34:
+    	insereElemento(*palavra);
         switch(*palavra){
             case '\0':
                 return _ERRO_LEXICO_;
@@ -1893,13 +1908,13 @@ int scanner(char *p, int *pos) {
                 goto q35;
 
             default:
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q34;
 
         }
 
     q35:
+    	insereElemento(*palavra);
         switch(*palavra){
             case '\0':
                 return _ERRO_LEXICO_;
@@ -1910,20 +1925,18 @@ int scanner(char *p, int *pos) {
 
             case '*':
                 palavra--;
-                insereElemento(*palavra);
                 palavra++; palavra++; (*pos)++;
                 goto q35;
 
             default:
                 palavra--;
-                insereElemento(*palavra);
                 palavra++;
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q34;
         }
 
     q36:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1938,6 +1951,7 @@ int scanner(char *p, int *pos) {
         return _COMENTARIO_;
 
     q38:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -1962,45 +1976,36 @@ int scanner(char *p, int *pos) {
         }
 
     q41:
+    	insereElemento(*palavra);
         switch(*palavra){
             case '1':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '2':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '3':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '4':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '5':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '6':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '7':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '8':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '9':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case '0':
-                insereElemento(*palavra);
                 palavra++; (*pos)++;
                 goto q41;
             case ' ':
@@ -2016,6 +2021,7 @@ int scanner(char *p, int *pos) {
         return _IDENTIFICADOR_;
 
     q43:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'f':
                 palavra++; (*pos)++;
@@ -2028,6 +2034,7 @@ int scanner(char *p, int *pos) {
         }
 
     q44:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 't':
                 palavra++; (*pos)++;
@@ -2037,6 +2044,7 @@ int scanner(char *p, int *pos) {
         }
 
     q45:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2051,6 +2059,7 @@ int scanner(char *p, int *pos) {
         return _INT_;
 
     q47:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'o':
                 palavra++; (*pos)++;
@@ -2060,6 +2069,7 @@ int scanner(char *p, int *pos) {
         }
 
     q48:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'o':
                 palavra++; (*pos)++;
@@ -2069,6 +2079,7 @@ int scanner(char *p, int *pos) {
         }
 
     q49:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'l':
                 palavra++; (*pos)++;
@@ -2078,6 +2089,7 @@ int scanner(char *p, int *pos) {
         }
 
     q50:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2092,6 +2104,7 @@ int scanner(char *p, int *pos) {
         return _BOOL_;
 
     q52:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'r':
                 palavra++; (*pos)++;
@@ -2101,6 +2114,7 @@ int scanner(char *p, int *pos) {
         }
 
     q53:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'o':
                 palavra++; (*pos)++;
@@ -2113,6 +2127,7 @@ int scanner(char *p, int *pos) {
         }
 
     q54:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'g':
                 palavra++; (*pos)++;
@@ -2122,6 +2137,7 @@ int scanner(char *p, int *pos) {
         }
 
     q55:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'r':
                 palavra++; (*pos)++;
@@ -2131,6 +2147,7 @@ int scanner(char *p, int *pos) {
         }
 
     q56:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'a':
                 palavra++; (*pos)++;
@@ -2140,6 +2157,7 @@ int scanner(char *p, int *pos) {
         }
 
     q57:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'm':
                 palavra++; (*pos)++;
@@ -2149,6 +2167,7 @@ int scanner(char *p, int *pos) {
         }
 
     q58:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2163,6 +2182,7 @@ int scanner(char *p, int *pos) {
         return _PROGRAM_;
 
     q60:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'o':
                 palavra++; (*pos)++;
@@ -2172,6 +2192,7 @@ int scanner(char *p, int *pos) {
         }
 
     q61:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'i':
                 palavra++; (*pos)++;
@@ -2181,6 +2202,7 @@ int scanner(char *p, int *pos) {
         }
 
     q62:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'd':
                 palavra++; (*pos)++;
@@ -2190,6 +2212,7 @@ int scanner(char *p, int *pos) {
         }
 
     q63:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2204,6 +2227,7 @@ int scanner(char *p, int *pos) {
         return _VOID_;
 
     q65:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'n':
                 palavra++; (*pos)++;
@@ -2213,6 +2237,7 @@ int scanner(char *p, int *pos) {
         }
 
     q66:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 't':
                 palavra++; (*pos)++;
@@ -2222,6 +2247,7 @@ int scanner(char *p, int *pos) {
         }
 
     q67:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2236,6 +2262,7 @@ int scanner(char *p, int *pos) {
         return _PRINT_;
 
     q69:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2250,6 +2277,7 @@ int scanner(char *p, int *pos) {
         return _IF_;
 
     q71:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'r':
                 palavra++; (*pos)++;
@@ -2259,6 +2287,7 @@ int scanner(char *p, int *pos) {
         }
 
     q72:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'u':
                 palavra++; (*pos)++;
@@ -2268,6 +2297,7 @@ int scanner(char *p, int *pos) {
         }
 
     q73:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'e':
                 palavra++; (*pos)++;
@@ -2277,6 +2307,7 @@ int scanner(char *p, int *pos) {
         }
 
     q74:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2291,6 +2322,7 @@ int scanner(char *p, int *pos) {
         return _TRUE_;
 
     q76:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'a':
                 palavra++; (*pos)++;
@@ -2300,6 +2332,7 @@ int scanner(char *p, int *pos) {
         }
 
     q77:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'l':
                 palavra++; (*pos)++;
@@ -2309,6 +2342,7 @@ int scanner(char *p, int *pos) {
         }
 
     q78:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 's':
                 palavra++; (*pos)++;
@@ -2318,6 +2352,7 @@ int scanner(char *p, int *pos) {
         }
 
     q79:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'e':
                 palavra++; (*pos)++;
@@ -2327,6 +2362,7 @@ int scanner(char *p, int *pos) {
         }
 
     q80:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2341,6 +2377,7 @@ int scanner(char *p, int *pos) {
         return _FALSE_;
 
     q82:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'o':
                 palavra++; (*pos)++;
@@ -2350,6 +2387,7 @@ int scanner(char *p, int *pos) {
         }
 
     q83:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2364,6 +2402,7 @@ int scanner(char *p, int *pos) {
         return _DO_;
 
     q85:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'l':
                 palavra++; (*pos)++;
@@ -2373,6 +2412,7 @@ int scanner(char *p, int *pos) {
         }
 
     q86:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 's':
                 palavra++; (*pos)++;
@@ -2382,6 +2422,7 @@ int scanner(char *p, int *pos) {
         }
 
     q87:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'e':
                 palavra++; (*pos)++;
@@ -2391,6 +2432,7 @@ int scanner(char *p, int *pos) {
         }
 
     q88:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2405,6 +2447,7 @@ int scanner(char *p, int *pos) {
         return _ELSE_;
 
     q90:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'h':
                 palavra++; (*pos)++;
@@ -2414,6 +2457,7 @@ int scanner(char *p, int *pos) {
         }
 
     q91:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'i':
                 palavra++; (*pos)++;
@@ -2423,6 +2467,7 @@ int scanner(char *p, int *pos) {
         }
 
     q92:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'l':
                 palavra++; (*pos)++;
@@ -2432,6 +2477,7 @@ int scanner(char *p, int *pos) {
         }
 
     q93:
+    	insereElemento(*palavra);
         switch(*palavra){
             case 'e':
                 palavra++; (*pos)++;
@@ -2441,6 +2487,7 @@ int scanner(char *p, int *pos) {
         }
 
     q94:
+    	insereElemento(*palavra);
         switch(*palavra){
             case ' ':
                 palavra++; (*pos)++;
@@ -2474,4 +2521,3 @@ int scanner(char *p, int *pos) {
             return _ERRO_LEXICO_;
         }
 }
-
