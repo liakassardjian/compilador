@@ -309,7 +309,7 @@ int criaEscopo(char * nomeEscopo, TabelaSimbolo * ts){
 
 // Retorna 0 se der erro.
 // Retorna 1 se OK.
-void insereParametroFormal(char * nomeEscopo, char * nomeParametroFormal, int tipoParametroFormal, TabelaSimbolo * ts){
+int insereParametroFormal(char * nomeEscopo, char * nomeParametroFormal, int tipoParametroFormal, TabelaSimbolo * ts){
     // Verificação se já existe escopo com o mesmo nome
     Escopo * temp;
     for(temp = ts->esc; temp; temp = temp->prox){
@@ -410,6 +410,16 @@ Var * getVar(char * nomeVariavel, char * nomeEscopo, TabelaSimbolo * ts){
         return 0;
     }
 
+    // Caso o escopo tenha parametros de entrada
+    if(esc->nomeParametro){
+        if(!strcmp(esc->nomeParametro, nomeVariavel)){
+            Var * v = (Var *) calloc(1, sizeof(Var));
+            v->nome = esc->nomeParametro;
+            v->tipo = esc->tipoParametro;
+            return v;
+        }
+    }
+
     Var * v;
     for(v = esc->var; v; v = v->prox){ // Busca da variavel no escopo
         if(!strcmp(v->nome, nomeVariavel)) return v; // Variavel encontrada no escopo
@@ -462,7 +472,7 @@ void insereToken(char * nomeToken, int codToken){
     }
 }
 
-void imprimeListaTokens(){
+void printListaTokens(){
     puts("Lista de tokens: ");
     puts("================================");
 
@@ -474,10 +484,159 @@ void imprimeListaTokens(){
     }
 }
 
-// TODO
-// Implementar funções para adicionar os tokens nessa lista
-// com nome e codigo do mesmo.
+// Transforma a lista de tokens em um vetor de tokens
+Token ** getTokens(){
+    int tamanho = lt->tamanho;
 
+    // Vetor de tokens
+    Token ** tokens = (Token **) calloc(tamanho, sizeof(Token *));
+
+    Token * temp;
+    int i;
+    for(i = 0, temp = lt->primeiroToken; temp ; i++, temp = temp->prox){
+        tokens[i] = (Token *) calloc(1, sizeof(Token));
+        tokens[i]->codToken = temp->codToken;
+        tokens[i]->nome = temp->nome;
+    }
+
+    return tokens;
+}
+
+/// ============================== ANALISE SEMANTICA
+int isEquals(char * a, char * b){
+    if(!strcmp(a, b)){
+        return 1;
+    }
+    return 0;
+}
+
+// Retorna _INT_ ou _BOOL_ dependendo do tipo da expressão
+int validaExpressao(int i, Token ** tokens){
+    // Recebe o primeiro lexema da expressão
+
+    puts("Expressao: ");
+    int j = i - 1;
+    for(; tokens[j]->codToken != _PONTO_VIRGULA_; j++){
+        printf("%s ", tokens[j]->nome);
+    }
+
+    // Identifica o tipo do primeiro termo. Todos os seguintes devem ser iguais
+    int tipo;
+    for(; tokens[i]->codToken != _IDENTIFICADOR_ &&
+          tokens[i]->codToken != _NUM_           &&
+          tokens[i]->codToken != _TRUE_          &&
+          tokens[i]->codToken != _FALSE_; i++){
+        printf("Buscando... %s | ", tokens[i]->nome);
+    }
+
+    printf("Achado primeiro elemento: %s\n", tokens[i]->nome);
+    if(tokens[i]->codToken == _IDENTIFICADOR_){ // Pegaremos o tipo da variavel
+        tipo = getVar(tokens[i]->nome, escopo, ts)->tipo;
+    }
+    // Se tipo == _NUM_, alteramos para _INT_ para facilitar o entendimento
+    else if(tokens[i]->codToken == _NUM_) tipo = TIPOINT;
+    else tipo = TIPOBOOL;
+
+    printf("Tipo retornado pela funcao: %s\n", tipo==TIPOINT?"Int":"Bool");
+
+    i++;
+    for(; tokens[i]->codToken != _PONTO_VIRGULA_; i++){
+        printf("Elemento: %s, tipo %d\n", tokens[i]->nome, tokens[i]->codToken);
+        // Validação de expressões inteiras
+        if(tipo == TIPOINT){
+            if(tokens[i]->codToken == _TRUE_ || tokens[i]->codToken == _FALSE_){
+                return 0;
+            }
+
+            // Validação de tipo de variável
+            if(tokens[i]->codToken == _IDENTIFICADOR_){
+                // Verifica se o identificador não é uma função
+                if(getEscopo(tokens[i]->nome, ts)){
+                    printf("Erro. %s e uma funcao.\n", tokens[i]->nome);
+                    return 0;
+                }
+
+                if(getVar(tokens[i]->nome, escopo, ts)->tipo != TIPOINT){
+                    printf("Erro. %s e do tipo Bool.\n", tokens[i]->nome);
+                    return 0;
+                }
+            }
+        }
+        // Validação de expressões booleanas
+        else{
+            if(tokens[i]->codToken == _NUM_                 ||
+               tokens[i]->codToken == _SINAL_MAIS_          ||
+               tokens[i]->codToken == _SINAL_MENOS_         ||
+               tokens[i]->codToken == _SINAL_MULTIPLICACAO_ ||
+               tokens[i]->codToken == _DIVISAO_             ||
+               tokens[i]->codToken == _MAIOR_               ||
+               tokens[i]->codToken == _MENOR_               ||
+               tokens[i]->codToken == TIPOINT
+               ){
+                return 0;
+            }
+
+            // Validação de tipo de variável
+            if(tokens[i]->codToken == _IDENTIFICADOR_){
+                // Verifica se o identificador não é uma função
+                if(getEscopo(tokens[i]->nome, ts)){
+                    printf("Erro. %s e uma funcao.\n", tokens[i]->nome);
+                    return 0;
+                }
+
+                if(getVar(tokens[i]->nome, escopo, ts)->tipo != TIPOBOOL){
+                    printf("Erro. %s e do tipo Int.\n", tokens[i]->nome);
+                    return 0;
+                }
+            }
+        }
+    }
+    return tipo;
+}
+
+// Valida expressões matemáticas
+int validaAtribuicao(int i, Token ** tokens){
+    char * nomeVar = tokens[i-1]->nome;
+    int tipoVar = getVar(nomeVar, escopo, ts)->tipo;
+
+    puts("==========================================");
+    printf("Tipo esperado: %s\n", tipoVar==TIPOINT?"Int":"Bool");
+    if(tipoVar != validaExpressao(i, tokens)){
+        printf("Erro! Divergencia de tipos.");
+        // TODO
+        // Fazer print da expressão errada
+        return 0;
+    }
+
+    return 1;
+}
+
+int analiseSemantica(){
+    // Recupera a lista de tokens do programa
+    Token ** tokens = getTokens();
+    int tamanho = lt->tamanho; // Tamanho da lista de tokens
+    int i;
+    for(i = 0; i < tamanho; i++){
+        //printf("Nome / cod token: %s____  / %d\n", tokens[i]->nome, tokens[i]->codToken);
+
+        // Troca de escopo
+        if(isEquals(tokens[i]->nome, "void ") ||
+           isEquals(tokens[i]->nome, "program ")){
+            escopo = tokens[i+1]->nome;
+        }
+
+        // Validação de comandos de atribuição
+        if(tokens[i]->codToken == _SINAL_IGUAL_ &&
+           !validaAtribuicao(i, tokens)){
+            return 0;
+        }
+
+        // Validação de expressões lógicas
+
+    }
+
+    return 1;
+}
 
 /// ============================== FUNCAO MAIN
 
@@ -509,8 +668,9 @@ int main(){
 
     // Comeca a interpretacao sintatica pelo nao-terminal Programa
     if (token != 0) {
-        if (Programa(palavra, &pos))
-            printf("\nSUCESSO NA LEITURA\n");
+        if (Programa(palavra, &pos) &&
+            analiseSemantica())
+            printf("SUCESSO NA ANALISE LEXICA E SINTATICA\n");
         else
             erro(&pos, palavra);
     } else {
@@ -1813,7 +1973,7 @@ int scanner(char *p, int *pos) {
         }
 
     q10:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _MENOR_IGUAL_);
         return _MENOR_IGUAL_;
 
     q11:
@@ -1889,59 +2049,59 @@ int scanner(char *p, int *pos) {
         }
 
     q17:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _DIFERENTE_);
         return _DIFERENTE_;
 
     q18:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _MAIOR_IGUAL_);
         return _MAIOR_IGUAL_;
 
     q19:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _MAIOR_);
         return _MAIOR_;
 
     q20:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _DIVISAO_);
         return _DIVISAO_;
 
     q21:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _SINAL_MENOS_);
         return _SINAL_MENOS_;
 
     q22:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _SINAL_IGUAL_);
         return _SINAL_IGUAL_;
 
     q23:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _SINAL_MAIS_);
         return _SINAL_MAIS_;
 
     q24:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _ABRE_PARENTESES_);
         return _ABRE_PARENTESES_;
 
     q25:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _FECHA_PARENTESES_);
         return _FECHA_PARENTESES_;
 
     q26:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _VIRGULA_);
         return _VIRGULA_;
 
     q27:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _PONTO_VIRGULA_);
         return _PONTO_VIRGULA_;
 
     q28:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _FECHA_CHAVES_);
         return _FECHA_CHAVES_;
 
     q29:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _ABRE_CHAVES_);
         return _ABRE_CHAVES_;
 
     q30:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _MENOR_);
         return _MENOR_;
 
     q31:
@@ -1967,7 +2127,7 @@ int scanner(char *p, int *pos) {
         }
 
     q33:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _IGUAL_IGUAL_);
         return _IGUAL_IGUAL_;
 
     q34:
@@ -2022,7 +2182,7 @@ int scanner(char *p, int *pos) {
         }
 
     q37:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _COMENTARIO_);
         return _COMENTARIO_;
 
     q38:
@@ -2038,7 +2198,7 @@ int scanner(char *p, int *pos) {
         }
 
     q39:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _SINAL_MULTIPLICACAO_);
         return _SINAL_MULTIPLICACAO_;
 
     q40:
@@ -2094,7 +2254,7 @@ int scanner(char *p, int *pos) {
         }
 
     q42:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _IDENTIFICADOR_);
         return _IDENTIFICADOR_;
 
     q43:
@@ -2133,7 +2293,7 @@ int scanner(char *p, int *pos) {
         }
 
     q46:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _INT_);
         return _INT_;
 
     q47:
@@ -2179,7 +2339,7 @@ int scanner(char *p, int *pos) {
         }
 
     q51:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _BOOL_);
         return _BOOL_;
 
     q52:
@@ -2258,7 +2418,7 @@ int scanner(char *p, int *pos) {
         }
 
     q59:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _PROGRAM_);
         return _PROGRAM_;
 
     q60:
@@ -2304,7 +2464,7 @@ int scanner(char *p, int *pos) {
         }
 
     q64:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _VOID_);
         return _VOID_;
 
     q65:
@@ -2340,7 +2500,7 @@ int scanner(char *p, int *pos) {
         }
 
     q68:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _PRINT_);
         return _PRINT_;
 
     q69:
@@ -2356,7 +2516,7 @@ int scanner(char *p, int *pos) {
         }
 
     q70:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _IF_);
         return _IF_;
 
     q71:
@@ -2402,7 +2562,7 @@ int scanner(char *p, int *pos) {
         }
 
     q75:
-	    printf("Elemento: %s\n", listaToString(l));
+	    insereToken(listaToString(l), _TRUE_);
         return _TRUE_;
 
     q76:
@@ -2458,7 +2618,7 @@ int scanner(char *p, int *pos) {
         }
 
     q81:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _FALSE_);
         return _FALSE_;
 
     q82:
@@ -2484,7 +2644,7 @@ int scanner(char *p, int *pos) {
         }
 
     q84:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _DO_);
         return _DO_;
 
     q85:
@@ -2530,7 +2690,7 @@ int scanner(char *p, int *pos) {
         }
 
     q89:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _ELSE_);
         return _ELSE_;
 
     q90:
@@ -2586,11 +2746,11 @@ int scanner(char *p, int *pos) {
         }
 
     q95:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _WHILE_);
         return _WHILE_;
 
     q96:
-        printf("Elemento: %s\n", listaToString(l));
+        insereToken(listaToString(l), _NUM_);
         return _NUM_;
 
     q97:
