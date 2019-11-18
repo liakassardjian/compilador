@@ -1,6 +1,5 @@
 
-void _proc ( int _a ) {  
-    int  _a ; 
+void _proc ( int _a ) {   
     _a = 1 ; 
     if ( _a < 1 ) { 
 	 _a = 12 ; 
@@ -35,4 +34,6 @@ program _correto {
 	    _a = _a - 1 ; 
 	} ; 
     } while ( _a > 1 ) ; 
+
+    print ( _a ) ;  
 } 
