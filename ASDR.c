@@ -1643,7 +1643,7 @@ int Numero(char palavra[], int *pos) {
  24. Identificador -> id
 */
 int Identificador(char palavra[], int *pos, int tipo) {
-    char * nomeIdentificador = listaToString(l);
+    char * nomeIdentificador = listaToString();
 
     // Insere na tabela de símbolos se for != de GETTIPO
     if(tipo == TIPOINT){
@@ -1995,7 +1995,7 @@ int scanner(char *p, int *pos) {
         }
 
     q10:
-        insereToken(listaToString(l), _MENOR_IGUAL_);
+        insereToken(listaToString(), _MENOR_IGUAL_);
         return _MENOR_IGUAL_;
 
     q11:
@@ -2071,59 +2071,59 @@ int scanner(char *p, int *pos) {
         }
 
     q17:
-        insereToken(listaToString(l), _DIFERENTE_);
+        insereToken(listaToString(), _DIFERENTE_);
         return _DIFERENTE_;
 
     q18:
-        insereToken(listaToString(l), _MAIOR_IGUAL_);
+        insereToken(listaToString(), _MAIOR_IGUAL_);
         return _MAIOR_IGUAL_;
 
     q19:
-        insereToken(listaToString(l), _MAIOR_);
+        insereToken(listaToString(), _MAIOR_);
         return _MAIOR_;
 
     q20:
-        insereToken(listaToString(l), _DIVISAO_);
+        insereToken(listaToString(), _DIVISAO_);
         return _DIVISAO_;
 
     q21:
-        insereToken(listaToString(l), _SINAL_MENOS_);
+        insereToken(listaToString(), _SINAL_MENOS_);
         return _SINAL_MENOS_;
 
     q22:
-        insereToken(listaToString(l), _SINAL_IGUAL_);
+        insereToken(listaToString(), _SINAL_IGUAL_);
         return _SINAL_IGUAL_;
 
     q23:
-        insereToken(listaToString(l), _SINAL_MAIS_);
+        insereToken(listaToString(), _SINAL_MAIS_);
         return _SINAL_MAIS_;
 
     q24:
-        insereToken(listaToString(l), _ABRE_PARENTESES_);
+        insereToken(listaToString(), _ABRE_PARENTESES_);
         return _ABRE_PARENTESES_;
 
     q25:
-        insereToken(listaToString(l), _FECHA_PARENTESES_);
+        insereToken(listaToString(), _FECHA_PARENTESES_);
         return _FECHA_PARENTESES_;
 
     q26:
-        insereToken(listaToString(l), _VIRGULA_);
+        insereToken(listaToString(), _VIRGULA_);
         return _VIRGULA_;
 
     q27:
-        insereToken(listaToString(l), _PONTO_VIRGULA_);
+        insereToken(listaToString(), _PONTO_VIRGULA_);
         return _PONTO_VIRGULA_;
 
     q28:
-        insereToken(listaToString(l), _FECHA_CHAVES_);
+        insereToken(listaToString(), _FECHA_CHAVES_);
         return _FECHA_CHAVES_;
 
     q29:
-        insereToken(listaToString(l), _ABRE_CHAVES_);
+        insereToken(listaToString(), _ABRE_CHAVES_);
         return _ABRE_CHAVES_;
 
     q30:
-        insereToken(listaToString(l), _MENOR_);
+        insereToken(listaToString(), _MENOR_);
         return _MENOR_;
 
     q31:
@@ -2149,7 +2149,7 @@ int scanner(char *p, int *pos) {
         }
 
     q33:
-        insereToken(listaToString(l), _IGUAL_IGUAL_);
+        insereToken(listaToString(), _IGUAL_IGUAL_);
         return _IGUAL_IGUAL_;
 
     q34:
@@ -2204,7 +2204,7 @@ int scanner(char *p, int *pos) {
         }
 
     q37:
-        insereToken(listaToString(l), _COMENTARIO_);
+        insereToken(listaToString(), _COMENTARIO_);
         return _COMENTARIO_;
 
     q38:
@@ -2220,7 +2220,7 @@ int scanner(char *p, int *pos) {
         }
 
     q39:
-        insereToken(listaToString(l), _SINAL_MULTIPLICACAO_);
+        insereToken(listaToString(), _SINAL_MULTIPLICACAO_);
         return _SINAL_MULTIPLICACAO_;
 
     q40:
@@ -2276,7 +2276,7 @@ int scanner(char *p, int *pos) {
         }
 
     q42:
-        insereToken(listaToString(l), _IDENTIFICADOR_);
+        insereToken(listaToString(), _IDENTIFICADOR_);
         return _IDENTIFICADOR_;
 
     q43:
@@ -2315,7 +2315,7 @@ int scanner(char *p, int *pos) {
         }
 
     q46:
-        insereToken(listaToString(l), _INT_);
+        insereToken(listaToString(), _INT_);
         return _INT_;
 
     q47:
@@ -2361,7 +2361,7 @@ int scanner(char *p, int *pos) {
         }
 
     q51:
-        insereToken(listaToString(l), _BOOL_);
+        insereToken(listaToString(), _BOOL_);
         return _BOOL_;
 
     q52:
@@ -2440,7 +2440,7 @@ int scanner(char *p, int *pos) {
         }
 
     q59:
-        insereToken(listaToString(l), _PROGRAM_);
+        insereToken(listaToString(), _PROGRAM_);
         return _PROGRAM_;
 
     q60:
@@ -2486,7 +2486,7 @@ int scanner(char *p, int *pos) {
         }
 
     q64:
-        insereToken(listaToString(l), _VOID_);
+        insereToken(listaToString(), _VOID_);
         return _VOID_;
 
     q65:
@@ -2522,7 +2522,7 @@ int scanner(char *p, int *pos) {
         }
 
     q68:
-        insereToken(listaToString(l), _PRINT_);
+        insereToken(listaToString(), _PRINT_);
         return _PRINT_;
 
     q69:
@@ -2538,7 +2538,7 @@ int scanner(char *p, int *pos) {
         }
 
     q70:
-        insereToken(listaToString(l), _IF_);
+        insereToken(listaToString(), _IF_);
         return _IF_;
 
     q71:
@@ -2584,7 +2584,7 @@ int scanner(char *p, int *pos) {
         }
 
     q75:
-	    insereToken(listaToString(l), _TRUE_);
+	    insereToken(listaToString(), _TRUE_);
         return _TRUE_;
 
     q76:
@@ -2640,7 +2640,7 @@ int scanner(char *p, int *pos) {
         }
 
     q81:
-        insereToken(listaToString(l), _FALSE_);
+        insereToken(listaToString(), _FALSE_);
         return _FALSE_;
 
     q82:
@@ -2666,7 +2666,7 @@ int scanner(char *p, int *pos) {
         }
 
     q84:
-        insereToken(listaToString(l), _DO_);
+        insereToken(listaToString(), _DO_);
         return _DO_;
 
     q85:
@@ -2712,7 +2712,7 @@ int scanner(char *p, int *pos) {
         }
 
     q89:
-        insereToken(listaToString(l), _ELSE_);
+        insereToken(listaToString(), _ELSE_);
         return _ELSE_;
 
     q90:
@@ -2768,11 +2768,11 @@ int scanner(char *p, int *pos) {
         }
 
     q95:
-        insereToken(listaToString(l), _WHILE_);
+        insereToken(listaToString(), _WHILE_);
         return _WHILE_;
 
     q96:
-        insereToken(listaToString(l), _NUM_);
+        insereToken(listaToString(), _NUM_);
         return _NUM_;
 
     q97:
